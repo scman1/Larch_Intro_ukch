@@ -10,11 +10,14 @@ from larch.io import read_ascii
 # larch function for converting a group to a dictionary and
 # a dictionary into a group
 from larch.utils import group2dict, dict2group
-# larch function for  normalisation and flattening
+# larch function for normalisation and flattening
 from larch.xafs import pre_edge
 # larch function for post-edge background substraction
 from larch.xafs import autobk
-
+# larch plot labels to save us from writing 
+from larch.wxlib import plotlabels as plab
+# larch function for fourier transform
+from larch.xafs import xftf
 # logarithm function from numpy
 from numpy import log
 # ploting library
@@ -87,7 +90,7 @@ plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
 plt.xlabel('Energy (eV)') # label y graph
 plt.ylabel('x$\mu$(E)') # label y axis
 plt.legend() # show legend
-plt.title("pre-edge and post_edge fitting to $\mu$")
+plt.title("pre-edge and post-edge fitting to $\mu$")
 plt.show()
 
 # https://vimeo.com/340207346 27:00
@@ -119,4 +122,39 @@ plt.plot(fe_xafs.k, fe_xafs.chi)
 plt.xlabel(r'$k\, ({\rm\AA})^{-1}$')
 plt.title(fe_xafs.filename+" K-$\chi$ ")
 plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.show()
+
+# the following prints the list of titles for the plots
+print(dir(plab))
+# https://vimeo.com/340207346 36:00
+# The plot k-weighted/chik) is equivalent to the plot
+# in the k space from Athena
+
+# This is the plot uses the labes imported from larch
+plt.plot(fe_xafs.k, fe_xafs.chi*fe_xafs.k**2, label=fe_xafs.filename)
+plt.xlabel(plab.k)
+plt.ylabel(plab.chikw.format(2))
+plt.title(fe_xafs.filename+" in K")
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.legend()
+plt.show()
+
+# Fourier transform with hanning window
+# The values passed to xftf are the same as those used in Athena
+# https://vimeo.com/340207346 41:00
+xftf(fe_xafs, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+
+plt.plot(fe_xafs.k, fe_xafs.chi*fe_xafs.k**2, label='chi(k)')
+plt.plot(fe_xafs.k, fe_xafs.kwin, label='window')
+plt.xlabel(plab.k)
+plt.ylabel(plab.chikw.format(2))
+plt.legend()
+plt.show()
+
+# This is the final graph for the initial session of XAFS
+plt.plot(fe_xafs.r, fe_xafs.chir_mag, label='chi(r), mag')
+plt.plot(fe_xafs.r, fe_xafs.chir_re, label='chi(r), real')
+plt.xlabel(plab.r)
+plt.ylabel(plab.chir.format(3))
+plt.legend()
 plt.show()
