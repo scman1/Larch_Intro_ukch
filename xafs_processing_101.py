@@ -12,6 +12,9 @@ from larch.io import read_ascii
 from larch.utils import group2dict, dict2group
 # larch function for  normalisation and flattening
 from larch.xafs import pre_edge
+# larch function for post-edge background substraction
+from larch.xafs import autobk
+
 # logarithm function from numpy
 from numpy import log
 # ploting library
@@ -87,11 +90,6 @@ plt.legend() # show legend
 plt.title("pre-edge and post_edge fitting to $\mu$")
 plt.show()
 
-print( 'Element Symbol', "\t", fe_xafs.atsym)
-print ('Edge',"\t\t", fe_xafs.edge)
-print ('E0'.translate(SUB),"\t\t", fe_xafs.e0)
-print ('Edge Step',"\t", fe_xafs.edge_step)
-
 # https://vimeo.com/340207346 27:00
 plt.plot(fe_xafs.energy, fe_xafs.flat, label=fe_xafs.filename) # plot flattened and normalised energy
 plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
@@ -99,4 +97,26 @@ plt.xlabel('Energy (eV)') # label y graph
 plt.ylabel(r'normalised x$\mu$(E)') # label y axis
 plt.title("normalised and flattened $\mu$")
 plt.legend() # show legend
+plt.show()
+
+print( 'Element Symbol', "\t", fe_xafs.atsym)
+print ('Edge',"\t\t", fe_xafs.edge)
+print ('E0'.translate(SUB),"\t\t", fe_xafs.e0)
+print ('Edge Step',"\t", fe_xafs.edge_step)
+
+# https://vimeo.com/340207346 30:00
+autobk(fe_xafs) # using defaults so no additional parameters are passed
+plt.plot(fe_xafs.energy, fe_xafs.bkg, label='background')
+plt.plot(fe_xafs.energy, fe_xafs.mu, label=fe_xafs.filename) # plot mu 
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlabel(r'Energy (eV)')
+plt.ylabel(r'x$\mu$(E)')
+plt.title(fe_xafs.filename+" in Energy")
+plt.legend()
+plt.show()
+
+plt.plot(fe_xafs.k, fe_xafs.chi)
+plt.xlabel(r'$k\, ({\rm\AA})^{-1}$')
+plt.title(fe_xafs.filename+" K-$\chi$ ")
+plt.grid(linestyle=':', linewidth=1) #show and format grid
 plt.show()
