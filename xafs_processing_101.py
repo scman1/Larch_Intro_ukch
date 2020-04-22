@@ -128,11 +128,11 @@ plt.title(fe_xafs.filename+" in Energy")
 plt.legend()
 plt.show()
 
-plt.plot(fe_xafs.k, fe_xafs.chi)
-plt.xlabel(r'$k\, ({\rm\AA})^{-1}$')
-plt.title(fe_xafs.filename+" K-$\chi$ ")
-plt.grid(linestyle=':', linewidth=1) #show and format grid
-plt.show()
+##plt.plot(fe_xafs.k, fe_xafs.chi)
+##plt.xlabel(r'$k\, ({\rm\AA})^{-1}$')
+##plt.title(fe_xafs.filename+" K-$\chi$ ")
+##plt.grid(linestyle=':', linewidth=1) #show and format grid
+##plt.show()
 
 # the following prints the list of titles for the plots
 print(dir(plab))
@@ -147,13 +147,25 @@ plt.ylabel(plab.chikw.format(2))
 plt.title(fe_xafs.filename+" in K")
 plt.grid(linestyle=':', linewidth=1) #show and format grid
 plt.legend()
+plt.xlim(0,14.5)
 plt.show()
 
 # Fourier transform with hanning window
 # The values passed to xftf are the same as those used in Athena
-# https://vimeo.com/340207346 41:00
+# https://vimeo.com/340207346 40:00
 xftf(fe_xafs, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
 
+# plot magnitude in r-space
+plt.plot(fe_xafs.r, fe_xafs.chir_mag,label=fe_xafs.filename)
+plt.title(fe_xafs.filename+" in R Space")
+plt.xlabel(plab.r)
+plt.ylabel(plab.chirmag.format(3))
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.legend()
+plt.xlim(0,6)
+plt.show()
+
+# https://vimeo.com/340207346 40:00
 plt.plot(fe_xafs.k, fe_xafs.chi*fe_xafs.k**2, label='chi(k)')
 plt.plot(fe_xafs.k, fe_xafs.kwin, label='window')
 plt.xlabel(plab.k)
