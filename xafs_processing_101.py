@@ -194,3 +194,35 @@ plt.grid(linestyle=':', linewidth=1) #show and format grid
 plt.legend()
 plt.xlim(0,6)
 plt.show()
+
+# shpw how the background is affected
+plt.plot(fe_xafs_copy.energy, fe_xafs_copy.bkg, label='background')
+plt.plot(fe_xafs_copy.energy, fe_xafs_copy.mu, label=fe_xafs_copy.filename) # plot mu 
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlabel(plab.energy)
+plt.ylabel(r'x$\mu$(E)')
+plt.title(fe_xafs_copy.filename+" in Energy")
+plt.legend()
+plt.show()
+
+# show the differences in the k-space
+# https://vimeo.com/340207346 49:00
+plt.plot(fe_xafs_copy.k, fe_xafs_copy.chi*fe_xafs_copy.k**2, label=fe_xafs_copy.filename)
+plt.plot(fe_xafs.k, fe_xafs.chi*fe_xafs.k**2, label=fe_xafs.filename)
+plt.xlabel(plab.r)
+plt.ylabel(plab.chir.format(2))
+plt.title(fe_xafs_copy.filename+" in k space")
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlim(0,14.5)
+plt.legend()
+plt.show()
+
+# https://vimeo.com/340207346 50:00
+# plot magnitude in r-space
+plt.plot(fe_xafs_copy.r, fe_xafs_copy.chir_mag,label=fe_xafs_copy.filename)
+plt.xlabel(plab.r)
+plt.ylabel(plab.chirmag.format(3))
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.legend()
+plt.xlim(0,6)
+plt.show()
