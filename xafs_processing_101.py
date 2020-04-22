@@ -45,7 +45,7 @@ def get_mu(xafs_group):
 # group
 def copy_group(xafs_group):
     # get a dictionary from te group
-    xafs_dict = group2dict(xafs_group)
+    xafs_dict = group2dict(xafs_group).copy()
     #xafs_dict['filename']=xafs_dict['filename']+"_copy"
     new_group = dict2group(xafs_dict)
     new_group.filename = new_group.filename+"_copy" 
@@ -128,12 +128,6 @@ plt.title(fe_xafs.filename+" in Energy")
 plt.legend()
 plt.show()
 
-##plt.plot(fe_xafs.k, fe_xafs.chi)
-##plt.xlabel(r'$k\, ({\rm\AA})^{-1}$')
-##plt.title(fe_xafs.filename+" K-$\chi$ ")
-##plt.grid(linestyle=':', linewidth=1) #show and format grid
-##plt.show()
-
 # the following prints the list of titles for the plots
 print(dir(plab))
 # https://vimeo.com/340207346 36:00
@@ -173,10 +167,30 @@ plt.ylabel(plab.chikw.format(2))
 plt.legend()
 plt.show()
 
-# This is the final graph for the initial session of XAFS
+# plot fitting
 plt.plot(fe_xafs.r, fe_xafs.chir_mag, label='chi(r), mag')
 plt.plot(fe_xafs.r, fe_xafs.chir_re, label='chi(r), real')
 plt.xlabel(plab.r)
 plt.ylabel(plab.chir.format(3))
 plt.legend()
+plt.show()
+
+# https://vimeo.com/340207346 44:30
+# Copy of the group to show the difference when the rbkg default
+# parameter is changed.
+fe_xafs_copy = copy_group(fe_xafs)
+# redo calculations
+autobk(fe_xafs_copy, rbkg=0.2)
+xftf(fe_xafs_copy, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+
+# https://vimeo.com/340207346 47:00
+# plot magnitudes in r-space
+# Show differences after changing rbkg
+plt.plot(fe_xafs_copy.r, fe_xafs_copy.chir_mag,label=fe_xafs_copy.filename)
+plt.plot(fe_xafs.r, fe_xafs.chir_mag,label=fe_xafs.filename)
+plt.xlabel(plab.r)
+plt.ylabel(plab.chirmag.format(3))
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.legend()
+plt.xlim(0,6)
 plt.show()
