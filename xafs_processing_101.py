@@ -41,6 +41,16 @@ def get_mu(xafs_group):
     xafs_group = dict2group(xafs_dict)
     return xafs_group
 
+# custom function for creating a copy of a
+# group
+def copy_group(xafs_group):
+    # get a dictionary from te group
+    xafs_dict = group2dict(xafs_group)
+    #xafs_dict['filename']=xafs_dict['filename']+"_copy"
+    new_group = dict2group(xafs_dict)
+    new_group.filename = new_group.filename+"_copy" 
+    return new_group
+
 # custom function for printing group properties
 # needs fixing as groups can change depending
 # on the source data
