@@ -67,6 +67,24 @@ def print_contents(xafs_group):
     print(xafs_group.inttime)
     print(xafs_group.array_labels)
 
+ #######################################################
+# |     By default athena recalculates everything     | #
+# |     so we can create a function that calculates   | #
+# V    mu, pre_edge, autobk and xftf for a group      V #
+ #######################################################
+
+def calc_with_defaults(xafs_group):
+    # calculate mu and normalise with background extraction
+    # should let the user specify the colums for i0, it, mu, iR. 
+    if not hasattr(xafs_group, 'mu'):
+        xafs_group = get_mu(xafs_group)    
+    # calculate pre-edge and post edge and add them to group
+    pre_edge(xafs_group, group=fe_xafs)
+    # perform background removal
+    autobk(xafs_group) # using defaults so no additional parameters are passed
+    # calculate fourier transform
+    xftf(xafs_group, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+    return xafs_group
 
  #######################################################
 # |       Restore state of previous session           | #
@@ -278,3 +296,15 @@ xftf(fe_xafs, kweight=3.0, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
 plt.plot(fe_xafs.r, fe_xafs.chir_mag, 'g', label=fe_xafs.filename+" kw=3")
 plt.legend()
 plt.show()
+
+# Import more data
+# Now import the next two files Fe_lepidocrocite.100 and Fe_lepidocrocite.200
+# using the same defaults for calculating mu
+
+fe_100 = read_ascii('XAFSExamples/Fe_standards/Fe_lepidocrocite.100')
+fe_200 = read_ascii('XAFSExamples/Fe_standards/Fe_lepidocrocite.200')
+
+# calculate mu and normalise with background extraction
+# using defaults
+fe_100 = calc_with_defaults(fe_100)
+fe_200 = calc_with_defaults(fe_200)
