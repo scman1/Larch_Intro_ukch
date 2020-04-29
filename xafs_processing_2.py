@@ -160,7 +160,6 @@ plt.legend()
 plt.xlim(0,6)
 plt.show()
 
-
 # Now see what happens after 1.0, example 1.2, in this case the peak afer 1
 # becomes clearer, while the values before 1 are again closer to 0. 
 # However, according to Ravel, this is not good because the peak seems too high.
@@ -180,3 +179,102 @@ plt.ylabel(plab.chirmag.format(3))
 plt.grid(linestyle=':', linewidth=1) #show and format grid
 plt.legend()
 plt.xlim(0,6)
+plt.show()
+
+# k-weight
+# All the parameters can also influence data analysis. For instance looking 
+# again at the initial group, we can analise how kweight affects the analyis. First
+# take a look at backgroun in energy. In this case, the values after 7200 are
+# so close to the background that they seem to disappear. However, the data
+# still contains useful values which can be enhanced to reveal meaningful
+# information.
+
+# https://vimeo.com/340215763 12:08
+plt.plot(fe_xafs.energy, fe_xafs.bkg, label='background')
+plt.plot(fe_xafs.energy, fe_xafs.mu, label=fe_xafs.filename) # plot mu 
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlabel(r'Energy (eV)')
+plt.ylabel(r'x$\mu$(E)')
+plt.title(fe_xafs.filename+" in Energy")
+plt.legend()
+plt.show()
+
+# This can be observed by plotting in the k space whith kweight 2. This enhances
+# the signals after 6, making them easier to see.
+
+# https://vimeo.com/340215763 12:37
+plt.plot(fe_xafs.k, fe_xafs.chi*fe_xafs.k**2, label=fe_xafs.filename)
+plt.xlabel(r'Wavenumber ($A^{-1}$)')
+plt.ylabel(plab.chikw.format(2))
+plt.title(fe_xafs.filename+" in k space")
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlim(0,14.5)
+plt.legend()
+plt.show()
+
+# This same signal before amplification can be seen in the following diagram. in
+# this case, whitout amplification is difficult to see values above 6.
+
+# https://vimeo.com/340215763 14:16
+plt.plot(fe_xafs.k, fe_xafs.chi)
+plt.ylabel(r'$\chi(k)$')
+plt.xlabel(r'Wavenumber ($A^{-1}$)')
+plt.title(fe_xafs.filename+" in k space")
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlim(0,14.5)
+plt.show()
+
+# Signal amplified by a k-weight of 1 showing more data
+
+# https://vimeo.com/340215763 14:23
+plt.plot(fe_xafs.k, fe_xafs.chi*fe_xafs.k, label=fe_xafs.filename)
+plt.xlabel(r'Wavenumber ($A^{-1}$)')
+plt.ylabel(plab.chikw.format(1))
+plt.title(fe_xafs.filename+" in k space")
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlim(0,14.5)
+plt.legend()
+plt.show()
+
+# Changing the kweight also affects the shape of the fourier transform. The
+# following diagram shows the fourier transforms when k-weight is 1 and 2
+
+xftf(fe_xafs, kweight=1.0, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+# https://vimeo.com/340215763 15:40
+# plot magnitude in r-space
+plt.plot(fe_xafs.r, fe_xafs.chir_mag,label=fe_xafs.filename+" kw=1")
+plt.xlabel(plab.r)
+plt.ylabel(plab.chirmag.format(3))
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.legend()
+plt.xlim(0,6)
+xftf(fe_xafs, kweight=2.0, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+# https://vimeo.com/340215763 15:40
+# plot magnitude in r-space
+plt.plot(fe_xafs.r, fe_xafs.chir_mag,label=fe_xafs.filename+" kw=2")
+plt.title(fe_xafs.filename+" at k = 1 and 2")
+plt.xlabel(plab.r)
+plt.ylabel(plab.chirmag.format(3))
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.legend()
+plt.xlim(0,6)
+plt.show()
+
+# The function of athena that allows visualising with different k-weights can
+# be replicated as follows
+plt.subplot(3, 1, 1)
+plt.xlim(0,6)
+xftf(fe_xafs, kweight=1.0, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+plt.plot(fe_xafs.r, fe_xafs.chir_mag, 'b', label=fe_xafs.filename+" kw=1")
+plt.legend()
+plt.subplot(3, 1, 2)
+plt.xlim(0,6)
+xftf(fe_xafs, kweight=2.0, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+plt.plot(fe_xafs.r, fe_xafs.chir_mag, 'r', label=fe_xafs.filename+" kw=2")
+plt.legend()
+plt.subplot(3, 1, 3)
+plt.xlim(0,6)
+xftf(fe_xafs, kweight=3.0, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+plt.plot(fe_xafs.r, fe_xafs.chir_mag, 'g', label=fe_xafs.filename+" kw=3")
+plt.legend()
+plt.show()
