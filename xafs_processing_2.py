@@ -21,6 +21,9 @@ from larch.xafs import xftf
 
 # import the larch.io libraries for managing athena files
 from larch.io import create_athena, read_athena, extract_athenagroup
+# import the larch.io function for merging groups interpolating if necessary
+from larch.io import merge_groups
+
 
 # logarithm function from numpy
 from numpy import log
@@ -429,5 +432,103 @@ plt.title("lepidocrocite in k space")
 plt.grid(linestyle=':', linewidth=1) #show and format grid
 plt.xlim(0,14.5)
 plt.legend()
+plt.show()
+
+# Alignment 
+# Pending to find how alignment of various readings is performed in Larch
+
+# Setting values for a group
+
+# Using the group_names property of the project and a loop allows setting values
+# accross groups easily, for instance to set E0 to the value of the first group
+# can be done as follows.
+
+# https://vimeo.com/340215763 47:03
+common_e0 = 0.0
+for group_x in fe_project._athena_groups:
+    if common_e0 == 0.0:
+        common_e0 = fe_project._athena_groups[group_x].e0
+    else:
+        fe_project._athena_groups[group_x].e0 = common_e0
+    autobk(fe_project._athena_groups[group_x], e0 = common_e0)
+    xftf(fe_project._athena_groups[group_x], kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+
+# Plot again to show that the change has removed the shift in the k space
+
+# https://vimeo.com/340215763 47:25
+plt.plot(gr_0.k, gr_0.chi*gr_0.k**2, label=gr_0.label)
+plt.plot(gr_1.k, gr_1.chi*gr_1.k**2, 'b', label=gr_1.label)
+plt.plot(gr_2.k, gr_2.chi*gr_2.k**2, label=gr_2.label)
+plt.xlabel(plab.r)
+plt.ylabel(plab.chir.format(2))
+plt.title("lepidocrocite in k space")
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlim(0,15)
+plt.legend()
+plt.show()
+
+# Merge groups 
+# Once all signals look similar to each other as in the last example above, the
+# next step in a typical analysis is to merge the signals in an average and
+# continue working on the average.
+
+# https://vimeo.com/340215763 54:00
+# use the larch.io function for merging groups 
+
+fe_merge = merge_groups(list(fe_project._athena_groups.values()))
+autobk(fe_merge)
+xftf(fe_merge, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+
+
+# The result is a new group wich can be plotted over all the other groups.
+# In the following image, the components are all in blue while the merge is
+# shown on top as a yellow line.
+
+plt.plot(gr_0.k, gr_0.chi*gr_0.k**2, 'b', label=gr_0.label)
+plt.plot(gr_1.k, gr_1.chi*gr_1.k**2, 'b', label=gr_1.label)
+plt.plot(gr_2.k, gr_2.chi*gr_2.k**2, 'b', label=gr_2.label)
+plt.plot(fe_merge.k, fe_merge.chi*fe_merge.k**2, 'y', label="Merged")
+plt.xlabel(plab.r)
+plt.ylabel(plab.chir.format(2))
+plt.title("lepidocrocite in k space")
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlim(0,15)
+plt.legend()
+plt.show()
+
+# https://vimeo.com/340215763 55:00
+plt.plot(gr_0.energy, gr_0.flat, 'b', label=gr_0.label) # plot flattened and normalised energy
+plt.plot(gr_1.energy, gr_1.flat, 'b', label=gr_1.label) # plot flattened and normalised energy
+plt.plot(gr_2.energy, gr_2.flat, 'b', label=gr_2.label) # plot flattened and normalised energy
+plt.plot(fe_merge.energy, fe_merge.flat, 'y', label="Merged")
+plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
+plt.xlabel('Energy (eV)') # label y graph
+plt.ylabel(r'normalised x$\mu$(E)') # label y axis
+plt.title('lepidocrocite')
+plt.xlim(7100,7200)
+plt.legend() # show legend
+plt.show()
+
+# name the group
+fe_merge.label = "Lepidocrocite"
+# add to the project
+fe_project2 = create_athena(project_name)
+for a_group in list(fe_project._athena_groups.values()):
+    fe_project2.add_group(a_group)
+# save the project
+fe_project2.add_group(fe_merge)
+fe_project2.save()
+
+# https://vimeo.com/340215763 55:00
+plt.plot(gr_0.energy, gr_0.flat, 'b', label=gr_0.label) # plot flattened and normalised energy
+plt.plot(gr_1.energy, gr_1.flat, 'b', label=gr_1.label) # plot flattened and normalised energy
+plt.plot(gr_2.energy, gr_2.flat, 'b', label=gr_2.label) # plot flattened and normalised energy
+plt.plot(fe_merge.energy, fe_merge.flat, 'y', label=fe_merge.label)
+plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
+plt.xlabel('Energy (eV)') # label y graph
+plt.ylabel(r'normalised x$\mu$(E)') # label y axis
+plt.title('lepidocrocite')
+plt.xlim(7100,7200)
+plt.legend() # show legend
 plt.show()
 
