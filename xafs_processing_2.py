@@ -18,6 +18,10 @@ from larch.xafs import autobk
 from larch.wxlib import plotlabels as plab
 # larch function for fourier transform
 from larch.xafs import xftf
+
+# import the larch.io libraries for managing athena files
+from larch.io import create_athena, read_athena, extract_athenagroup
+
 # logarithm function from numpy
 from numpy import log
 # ploting library
@@ -308,3 +312,33 @@ fe_200 = read_ascii('XAFSExamples/Fe_standards/Fe_lepidocrocite.200')
 # using defaults
 fe_100 = calc_with_defaults(fe_100)
 fe_200 = calc_with_defaults(fe_200)
+
+# save as an athena project
+
+project_name = 'XAFSExamples/Fe_standards/lepidocrocite.prj'
+fe_project = create_athena(project_name)
+fe_project.add_group(fe_xafs)
+fe_project.add_group(fe_100)
+fe_project.add_group(fe_200)
+fe_project.save()
+vars(fe_project)
+
+# read athena project
+
+fe_project = read_athena(project_name)
+vars(fe_project)
+gr_0 = extract_athenagroup(fe_project.Fe_lepidocrocite_000)
+gr_0 = calc_with_defaults(gr_0)
+#vars(gr_0)
+gr_1 = fe_project.Fe_lepidocrocite_100
+gr_1 = calc_with_defaults(gr_1)
+gr_2 = fe_project.Fe_lepidocrocite_200
+gr_2 = calc_with_defaults(gr_2)
+plt.plot(gr_0.energy, gr_0.mu, label= gr_0.label + ' $\mu$')
+plt.plot(gr_1.energy, gr_1.mu, label= gr_1.label + ' $\mu$')
+plt.plot(gr_2.energy, gr_2.mu, label= gr_2.label + ' $\mu$')
+plt.xlabel('Energy')
+plt.ylabel('$\mu$')
+plt.legend() # include the leyend in the plot
+plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
+plt.show()
