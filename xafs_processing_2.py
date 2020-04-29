@@ -342,3 +342,92 @@ plt.ylabel('$\mu$')
 plt.legend() # include the leyend in the plot
 plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
 plt.show()
+
+# https://vimeo.com/340215763 35:00
+plt.plot(gr_0.energy, gr_0.flat, label=gr_0.label) # plot flattened and normalised energy
+plt.plot(gr_1.energy, gr_1.flat, label=gr_1.label) # plot flattened and normalised energy
+plt.plot(gr_2.energy, gr_2.flat, label=gr_2.label) # plot flattened and normalised energy
+plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
+plt.xlabel('Energy (eV)') # label y graph
+plt.ylabel(r'normalised x$\mu$(E)') # label y axis
+plt.title('lepidocrocite')
+plt.legend() # show legend
+plt.show()
+
+# https://vimeo.com/340215763 35:00
+plt.plot(gr_0.energy, gr_0.flat, 'b', label=gr_0.label) # plot flattened and normalised energy
+plt.plot(gr_1.energy, gr_1.flat,'g', label=gr_1.label) # plot flattened and normalised energy
+plt.plot(gr_2.energy, gr_2.flat, 'y', label=gr_2.label) # plot flattened and normalised energy
+plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
+plt.xlabel('Energy (eV)') # label y graph
+plt.ylabel(r'normalised x$\mu$(E)') # label y axis
+plt.title('lepidocrocite')
+plt.xlim(7100,7220)
+plt.legend() # show legend
+plt.show()
+
+# https://vimeo.com/340215763 36:40
+plt.plot(gr_0.k, gr_0.chi*gr_0.k**2, label=gr_0.label)
+plt.plot(gr_1.k, gr_1.chi*gr_1.k**2, label=gr_1.label)
+plt.plot(gr_2.k, gr_2.chi*gr_2.k**2, label=gr_2.label)
+plt.xlabel(plab.r)
+plt.ylabel(plab.chir.format(2))
+plt.title("lepidocrocite in k space")
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlim(0,14.5)
+plt.legend()
+plt.show()
+
+# https://vimeo.com/340215763 36:46
+# plot magnitude in r-space
+plt.title("lepidocrocite in R space")
+plt.plot(gr_0.r, gr_0.chir_mag,label=gr_0.label)
+plt.plot(gr_1.r, gr_1.chir_mag,label=gr_1.label)
+plt.plot(gr_2.r, gr_2.chir_mag,label=gr_2.label)
+plt.xlabel(plab.r)
+plt.ylabel(plab.chirmag.format(3))
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.legend()
+plt.xlim(0,6)
+plt.show()
+
+# E0
+# The value for E0 is calculated during normalisation, but it can be set to an
+# specific value, but his will alter the results of some of the calculations for
+# instance changing the value for E0 in the second group (Fe_lepidocrocite_001).
+# The change is almost imperceptible on the normalised graph.
+
+# https://vimeo.com/340215763 39:20
+
+# change e0, recalculate and plot
+autobk(gr_1, e0 = 7124.74)
+xftf(gr_1, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+
+plt.plot(gr_0.energy, gr_0.flat, 'y', label=gr_0.label) # plot flattened and normalised energy
+plt.plot(gr_1.energy, gr_1.flat,'r', label=gr_1.label) # plot flattened and normalised energy
+plt.plot(gr_2.energy, gr_2.flat, 'c', label=gr_2.label) # plot flattened and normalised energy
+plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
+plt.xlabel('Energy (eV)') # label y graph
+plt.ylabel(r'normalised x$\mu$(E)') # label y axis
+plt.title('lepidocrocite')
+plt.xlim(7120,7140)
+plt.legend() # show legend
+plt.show()
+
+
+# However, the plot of the k space shows several differences for the second
+# group when compared to the other two. This causes a shift in the lower
+# energies which decreases on higher energies.
+
+# https://vimeo.com/340215763 36:40
+plt.plot(gr_0.k, gr_0.chi*gr_0.k**2, label=gr_0.label)
+plt.plot(gr_1.k, gr_1.chi*gr_1.k**2, 'b', label=gr_1.label)
+plt.plot(gr_2.k, gr_2.chi*gr_2.k**2, label=gr_2.label)
+plt.xlabel(plab.r)
+plt.ylabel(plab.chir.format(2))
+plt.title("lepidocrocite in k space")
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlim(0,14.5)
+plt.legend()
+plt.show()
+
