@@ -1,6 +1,6 @@
 #
-# Example of using larch to reproduce the first part of the
-# XAFS tutorial
+# Example of using larch to reproduce the second part of the
+# XAFS processing tutorial 
 #
 
 # libraries/functions used in this script are obtained using import
@@ -68,124 +68,35 @@ def print_contents(xafs_group):
     print(xafs_group.array_labels)
 
 
-# https://vimeo.com/340207346 07:01
+ #######################################################
+# |       Restore state of previous session           | #
+# V                                                   V #
+ #######################################################
+
+# read the data    
 fe_xafs = read_ascii('XAFSExamples/Fe_standards/Fe_lepidocrocite.000')
-# using vars(fe_data) we see that the object has the following properties: 
-# path, filename, header, data, attrs, energy, i0, it, ir, inttime, and labels
-# vars(fe_xafs)
 
-# the following prints show the contents of each
-print_contents(fe_xafs)
-
-# https://vimeo.com/340207346 15:06
+# calculate mu and normalise with background extraction
 fe_xafs = get_mu(fe_xafs)
 
-plt.plot(fe_xafs.energy, fe_xafs.mu, label='$\mu$')
-plt.xlabel('Energy')
-plt.ylabel('$\mu$')
-plt.legend() # include the leyend in the plot
-plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
-plt.title(fe_xafs.filename+" $\mu$")
-plt.show()
-
-# https://vimeo.com/340207346 25:00
 # calculate pre-edge and post edge and add them to group
 pre_edge(fe_xafs, group=fe_xafs)
 
-#show pre-edge and post-edge fitting to mu
-plt.plot(fe_xafs.energy, fe_xafs.pre_edge, 'g', label='pre-edge') # plot pre-edge in green
-plt.plot(fe_xafs.energy, fe_xafs.post_edge, 'r', label='post-edge')# plot post-edge in green
-plt.plot(fe_xafs.energy, fe_xafs.mu, 'b', label=fe_xafs.filename) # plot mu in blue
-plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
-plt.xlabel('Energy (eV)') # label y graph
-plt.ylabel('x$\mu$(E)') # label y axis
-plt.legend() # show legend
-plt.title("pre-edge and post-edge fitting to $\mu$")
-plt.show()
-
-# https://vimeo.com/340207346 27:00
-plt.plot(fe_xafs.energy, fe_xafs.flat, label=fe_xafs.filename) # plot flattened and normalised energy
-plt.grid(color='r', linestyle=':', linewidth=1) #show and format grid
-plt.xlabel('Energy (eV)') # label y graph
-plt.ylabel(r'normalised x$\mu$(E)') # label y axis
-plt.title("normalised and flattened $\mu$")
-plt.legend() # show legend
-plt.show()
-
-print( 'Element Symbol', "\t", fe_xafs.atsym)
-print ('Edge',"\t\t", fe_xafs.edge)
-print ('E0'.translate(SUB),"\t\t", fe_xafs.e0)
-print ('Edge Step',"\t", fe_xafs.edge_step)
-
-# https://vimeo.com/340207346 30:00
+# perform background removal
 autobk(fe_xafs) # using defaults so no additional parameters are passed
-plt.plot(fe_xafs.energy, fe_xafs.bkg, label='background')
-plt.plot(fe_xafs.energy, fe_xafs.mu, label=fe_xafs.filename) # plot mu 
-plt.grid(linestyle=':', linewidth=1) #show and format grid
-plt.xlabel(r'Energy (eV)')
-plt.ylabel(r'x$\mu$(E)')
-plt.title(fe_xafs.filename+" in Energy")
-plt.legend()
-plt.show()
 
-# the following prints the list of titles for the plots
-print(dir(plab))
-# https://vimeo.com/340207346 36:00
-# The plot k-weighted/chik) is equivalent to the plot
-# in the k space from Athena
-
-# This is the plot uses the labes imported from larch
-plt.plot(fe_xafs.k, fe_xafs.chi*fe_xafs.k**2, label=fe_xafs.filename)
-plt.xlabel(plab.k)
-plt.ylabel(plab.chikw.format(2))
-plt.title(fe_xafs.filename+" in K")
-plt.grid(linestyle=':', linewidth=1) #show and format grid
-plt.legend()
-plt.xlim(0,14.5)
-plt.show()
-
-# Fourier transform with hanning window
-# The values passed to xftf are the same as those used in Athena
-# https://vimeo.com/340207346 40:00
+# calculate fourier transform
 xftf(fe_xafs, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
 
-# plot magnitude in r-space
-plt.plot(fe_xafs.r, fe_xafs.chir_mag,label=fe_xafs.filename)
-plt.title(fe_xafs.filename+" in R Space")
-plt.xlabel(plab.r)
-plt.ylabel(plab.chirmag.format(3))
-plt.grid(linestyle=':', linewidth=1) #show and format grid
-plt.legend()
-plt.xlim(0,6)
-plt.show()
-
-# https://vimeo.com/340207346 40:00
-plt.plot(fe_xafs.k, fe_xafs.chi*fe_xafs.k**2, label='chi(k)')
-plt.plot(fe_xafs.k, fe_xafs.kwin, label='window')
-plt.xlabel(plab.k)
-plt.ylabel(plab.chikw.format(2))
-plt.legend()
-plt.show()
-
-# plot fitting
-plt.plot(fe_xafs.r, fe_xafs.chir_mag, label='chi(r), mag')
-plt.plot(fe_xafs.r, fe_xafs.chir_re, label='chi(r), real')
-plt.xlabel(plab.r)
-plt.ylabel(plab.chir.format(3))
-plt.legend()
-plt.show()
-
-# https://vimeo.com/340207346 44:30
-# Copy of the group to show the difference when the rbkg default
-# parameter is changed.
+# create copy of initial group
 fe_xafs_copy = copy_group(fe_xafs)
-# redo calculations
+
+# redo calculations with modified bacground parameter
 autobk(fe_xafs_copy, rbkg=0.2)
 xftf(fe_xafs_copy, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
 
-# https://vimeo.com/340207346 47:00
-# plot magnitudes in r-space
-# Show differences after changing rbkg
+# plot magnitudes in r-space to see we are at the same point where we left in
+# session 1
 plt.plot(fe_xafs_copy.r, fe_xafs_copy.chir_mag,label=fe_xafs_copy.filename)
 plt.plot(fe_xafs.r, fe_xafs.chir_mag,label=fe_xafs.filename)
 plt.xlabel(plab.r)
@@ -193,36 +104,3 @@ plt.ylabel(plab.chirmag.format(3))
 plt.grid(linestyle=':', linewidth=1) #show and format grid
 plt.legend()
 plt.xlim(0,6)
-plt.show()
-
-# shpw how the background is affected
-plt.plot(fe_xafs_copy.energy, fe_xafs_copy.bkg, label='background')
-plt.plot(fe_xafs_copy.energy, fe_xafs_copy.mu, label=fe_xafs_copy.filename) # plot mu 
-plt.grid(linestyle=':', linewidth=1) #show and format grid
-plt.xlabel(plab.energy)
-plt.ylabel(r'x$\mu$(E)')
-plt.title(fe_xafs_copy.filename+" in Energy")
-plt.legend()
-plt.show()
-
-# show the differences in the k-space
-# https://vimeo.com/340207346 49:00
-plt.plot(fe_xafs_copy.k, fe_xafs_copy.chi*fe_xafs_copy.k**2, label=fe_xafs_copy.filename)
-plt.plot(fe_xafs.k, fe_xafs.chi*fe_xafs.k**2, label=fe_xafs.filename)
-plt.xlabel(plab.r)
-plt.ylabel(plab.chir.format(2))
-plt.title(fe_xafs_copy.filename+" in k space")
-plt.grid(linestyle=':', linewidth=1) #show and format grid
-plt.xlim(0,14.5)
-plt.legend()
-plt.show()
-
-# https://vimeo.com/340207346 50:00
-# plot magnitude in r-space
-plt.plot(fe_xafs_copy.r, fe_xafs_copy.chir_mag,label=fe_xafs_copy.filename)
-plt.xlabel(plab.r)
-plt.ylabel(plab.chirmag.format(3))
-plt.grid(linestyle=':', linewidth=1) #show and format grid
-plt.legend()
-plt.xlim(0,6)
-plt.show()
