@@ -104,3 +104,79 @@ plt.ylabel(plab.chirmag.format(3))
 plt.grid(linestyle=':', linewidth=1) #show and format grid
 plt.legend()
 plt.xlim(0,6)
+plt.show()
+
+# Background tweaking
+# Making the background parameter small caused some issues, but so does changing
+# it to a larger value. The following example shows what happens with a larger
+# rbkg parameter
+
+# https://vimeo.com/340215763 00:50
+# change rbkg to a larger number and redo calculations
+# with modified bacground parameter
+autobk(fe_xafs_copy, rbkg=2.0)
+xftf(fe_xafs_copy, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+
+# plot magnitude in r-space to see results of change
+plt.plot(fe_xafs_copy.r, fe_xafs_copy.chir_mag,label=fe_xafs_copy.filename)
+plt.plot(fe_xafs.r, fe_xafs.chir_mag,label=fe_xafs.filename)
+plt.xlabel(plab.r)
+plt.ylabel(plab.chirmag.format(3))
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.legend()
+plt.xlim(0,6)
+plt.show()
+
+# When looking again in energy, the result is that the background and the signal
+# are now closer than before changing the parameter
+# https://vimeo.com/340215763 02:19
+# visualise and interpret in energy
+plt.plot(fe_xafs_copy.energy, fe_xafs_copy.bkg, label='background')
+plt.plot(fe_xafs_copy.energy, fe_xafs_copy.mu, label=fe_xafs_copy.filename) # plot mu 
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.xlabel(plab.energy)
+plt.ylabel(r'x$\mu$(E)')
+plt.title(fe_xafs_copy.filename+" in Energy")
+plt.legend()
+plt.show()
+
+# varying the rbkg parameter it is possible to find an interval of values in which
+# the changes in the r-space are safe (don't produce spurious peaks).
+# with larch the safe margin is from 0.7 to 1.0
+
+# https://vimeo.com/340215763 02:50
+# change rbkg to a larger number and redo calculations
+# with modified bacground parameter
+autobk(fe_xafs_copy, rbkg=0.7)
+xftf(fe_xafs_copy, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+
+# plot magnitude in r-space to see results of change
+plt.plot(fe_xafs_copy.r, fe_xafs_copy.chir_mag,label=fe_xafs_copy.filename)
+plt.plot(fe_xafs.r, fe_xafs.chir_mag,label=fe_xafs.filename)
+plt.xlabel(plab.r)
+plt.ylabel(plab.chirmag.format(3))
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.legend()
+plt.xlim(0,6)
+plt.show()
+
+
+# Now see what happens after 1.0, example 1.2, in this case the peak afer 1
+# becomes clearer, while the values before 1 are again closer to 0. 
+# However, according to Ravel, this is not good because the peak seems too high.
+# Notice that in the tutorial this effect is reached at 1.4 not 1.2
+
+# https://vimeo.com/340215763 05:50
+# change rbkg to a larger number and redo calculations
+# with modified bacground parameter
+autobk(fe_xafs_copy, rbkg=1.2)
+xftf(fe_xafs_copy, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
+
+# plot magnitude in r-space to see results of change
+plt.plot(fe_xafs_copy.r, fe_xafs_copy.chir_mag,label=fe_xafs_copy.filename)
+plt.plot(fe_xafs.r, fe_xafs.chir_mag,label=fe_xafs.filename)
+plt.xlabel(plab.r)
+plt.ylabel(plab.chirmag.format(3))
+plt.grid(linestyle=':', linewidth=1) #show and format grid
+plt.legend()
+plt.xlim(0,6)
