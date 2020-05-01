@@ -2,18 +2,17 @@
 # https://github.com/xraypy/xraylarch/blob/master/examples/programming/Py_usinglarch.py
 import numpy as np
 import pylab
-from larch import Interpreter, Group
-from larch.io import read_ascii
+import larch
 
 # now import larch-specific Python code
 from larch_plugins.xafs import autobk, xftf
 
 # create a larch interpreter, passed to most functions
-my_larch = Interpreter()
+my_larch = larch.Interpreter()
 
 # read data (here using np.loadtxt), stick into Group
 # using "expected names" for XAFS data
-xafsdat = read_ascii('XAFSExamples/Fe_standards/Fe_lepidocrocite.000')
+xafsdat = larch.io.read_ascii('XAFSExamples/Fe_standards/Fe_lepidocrocite.000')
 
 # calculate mu
 xafsdat.mu = np.log(abs(xafsdat.i0/xafsdat.it))
@@ -60,3 +59,4 @@ pylab.xlabel(r'$ R (\AA) $')
 pylab.ylabel(r'$ \chi(R) (\AA^{-3}) $')
 
 pylab.show()
+
