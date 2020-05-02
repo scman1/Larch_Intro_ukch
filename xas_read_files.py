@@ -21,6 +21,10 @@ def get_uniques(cde_doc):
             uniques[chement.text] += 1
     return uniques
 
+# get the common pattern between the two strings
+def get_common(current_pattern, file_name):
+    return ""
+
 def get_max(uniques):
     max_val = 0
     max_lbl = ""
@@ -40,8 +44,15 @@ def cde_read_pdfs(argv, pdf_path = "./pdfs"):
         return
     pdf_dir= Path(pdf_path)
     files_list = get_files_list(pdf_dir, name_pattern)
-    print(files_list)
-
+    for a_file in files_list:
+        file_name = a_file.name
+        pattern_current = ""
+        if pattern_current == "":
+            pattern_current = file_name
+        else:
+            pattern_current = common(pattern_current, file_name)
+        print(file_name)
+        
 if __name__ == "__main__":
    cde_read_pdfs(sys.argv[1:])
 
