@@ -40,15 +40,20 @@ def xas_read_files(argv):
     files_list = get_files_list(pdf_dir, name_pattern)
     pattern_current = ""
     common_files = {}
+    print("Found ", len(files_list), "to process with pattern:", name_pattern)
     for index, a_file in enumerate(files_list):
         file_name = a_file.name
+        print(file_name)
         if index < len(files_list)-1:
             another_file = files_list[index+1].name
             common_pattern = get_common(file_name, another_file)
             #common_pattern = file_name[match.a: match.a + match.size]
             if pattern_current == "":
                 pattern_current = common_pattern
-                common_files[pattern_current] = [file_name, another_file]
+                if pattern_current in common_files:
+                    common_files[pattern_current] += [file_name, another_file]
+                else:
+                    common_files[pattern_current] = [file_name, another_file]
             elif pattern_current == common_pattern:
                 common_files[pattern_current].append(another_file)
             else:
@@ -56,7 +61,8 @@ def xas_read_files(argv):
         else:
             another_file = ""
             #pattern_current = get_common(pattern_current, file_name)
-        print(file_name, pattern_current)
+
+    print("initial groups:", common_files)
     patterns_found = common_files.keys()
     patterns_remove = []
 
@@ -71,12 +77,10 @@ def xas_read_files(argv):
                     #merge check into other and remove check
                     common_files[pattern_other] = list(set_other.union(set_check))
                     patterns_remove.append(pattern_check)
-                    break
                 elif pattern_other in pattern_check:
                     #merge other into check and remove other
                     patterns_remove.append(pattern_other)
                     common_files[pattern_check] = list(set_other.union(set_check))
-                    break
 
     # remove redundant patterns
     if len(patterns_remove) > 0:
@@ -84,7 +88,7 @@ def xas_read_files(argv):
             common_files.pop(pattern_rem)
     
     for pattern in common_files:
-        print(len(common_files[pattern]), "files with pattern" , pattern, "\nFiles: ", common_files[pattern])
+        print(len(common_files[pattern]), "files to process with pattern" , pattern, "\nFiles: ", common_files[pattern])
     
 if __name__ == "__main__":
    xas_read_files(sys.argv[1:])
