@@ -3,6 +3,8 @@ from chemdataextractor import Document
 # import library for managing files
 from pathlib import Path
 import sys
+from difflib import SequenceMatcher 
+
 
 def get_files_list(source_dir, filename_pattern):
     i_counter = 0
@@ -22,37 +24,49 @@ def get_uniques(cde_doc):
     return uniques
 
 # get the common pattern between the two strings
-def get_common(current_pattern, file_name):
-    return ""
+def get_common(file_1, file_2):
+    common_pattern = ""
+    seqMatch = SequenceMatcher(None, file_1, file_2)
+    match = seqMatch.find_longest_match(0, len(file_1), 0, len(file_2))
+    if (match.size!=0): 
+        #print (match)
+        common_pattern = file_1[match.a: match.a + match.size]
+    else: 
+         print ('No longest common sub-string found') 
+    return common_pattern
 
-def get_max(uniques):
-    max_val = 0
-    max_lbl = ""
-    for chement in uniques:
-        if uniques[chement] > max_val:
-            max_val = uniques[chement]
-            max_lbl = chement.replace('\n',' ')
-    return max_lbl, max_val
-
-def cde_read_pdfs(argv, pdf_path = "./pdfs"):
+def xas_read_files(argv, pdf_path = "ascii"):
     try:
         pdf_path = argv[0]
         name_pattern = argv[1]
     except:
         print("missing arguments"+
-              "\n -string pdf files path")
+              "\n -string files path")
         return
     pdf_dir= Path(pdf_path)
     files_list = get_files_list(pdf_dir, name_pattern)
-    for a_file in files_list:
+    pattern_current = ""
+    common_files = {}
+    for index, a_file in enumerate(files_list):
         file_name = a_file.name
-        pattern_current = ""
-        if pattern_current == "":
-            pattern_current = file_name
+        if index < len(files_list)-1:
+            another_file = files_list[index+1].name
+            common_pattern = get_common(file_name, another_file)
+            #common_pattern = file_name[match.a: match.a + match.size]
+            if pattern_current == "":
+                pattern_current = common_pattern
+                common_files[pattern_current] = [file_name, another_file]
+            elif pattern_current == common_pattern:
+                common_files[pattern_current].append(another_file)
+            else:
+                pattern_current = ""
         else:
-            pattern_current = common(pattern_current, file_name)
-        print(file_name)
-        
+            another_file = ""
+            #pattern_current = get_common(pattern_current, file_name)
+        print(file_name, pattern_current)
+    for pattern in common_files:
+        print(len(common_files[pattern]), "files with pattern" , pattern, "\nFiles: ", common_files[pattern])
+    
 if __name__ == "__main__":
-   cde_read_pdfs(sys.argv[1:])
+   xas_read_files(sys.argv[1:])
 
