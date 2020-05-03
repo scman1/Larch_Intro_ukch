@@ -1,5 +1,5 @@
-# import Document library from Chem Data Extractor
-from chemdataextractor import Document
+# read xas text files from a directory
+
 # import library for managing files
 from pathlib import Path
 import sys
@@ -14,14 +14,6 @@ def get_files_list(source_dir, filename_pattern):
         files_list.append(filepath)
     return files_list
 
-def get_uniques(cde_doc):
-    uniques={}
-    for chement in cde_doc.cems:
-        if not chement.text in uniques:
-            uniques[chement.text] = 1
-        else:
-            uniques[chement.text] += 1
-    return uniques
 
 # get the common pattern between the two strings
 def get_common(file_1, file_2):
