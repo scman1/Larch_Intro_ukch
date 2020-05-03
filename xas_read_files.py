@@ -27,13 +27,14 @@ def get_common(file_1, file_2):
          print ('No longest common sub-string found') 
     return common_pattern
 
-def xas_read_files(argv, pdf_path = "ascii"):
+def xas_read_files(argv):
     try:
         pdf_path = argv[0]
         name_pattern = argv[1]
     except:
         print("missing arguments"+
-              "\n -string files path")
+              "\n -string files path (eg: ../documents/ascii_path)"+
+              "\n -string file pattern (eg: *experiment_FeO2_sample*)")
         return
     pdf_dir= Path(pdf_path)
     files_list = get_files_list(pdf_dir, name_pattern)
@@ -59,7 +60,7 @@ def xas_read_files(argv, pdf_path = "ascii"):
     patterns_found = common_files.keys()
     patterns_remove = []
 
-    # remove subindices from the matches
+    # mark redundant patterns to remove
     for pattern_check in common_files:
         for pattern_other in patterns_found:
             if pattern_other != pattern_check:
@@ -76,8 +77,11 @@ def xas_read_files(argv, pdf_path = "ascii"):
                     patterns_remove.append(pattern_other)
                     common_files[pattern_check] = list(set_other.union(set_check))
                     break
-                
-    print(patterns_remove)
+
+    # remove redundant patterns
+    if len(patterns_remove) > 0:
+        for pattern_rem in patterns_remove:
+            common_files.pop(pattern_rem)
     
     for pattern in common_files:
         print(len(common_files[pattern]), "files with pattern" , pattern, "\nFiles: ", common_files[pattern])
