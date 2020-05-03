@@ -63,13 +63,18 @@ def xas_read_files(argv, pdf_path = "ascii"):
     for pattern_check in common_files:
         for pattern_other in patterns_found:
             if pattern_other != pattern_check:
+                # use sets to ignore duplicates
+                set_check = set(common_files[pattern_check])
+                set_other = set(common_files[pattern_other])
                 if pattern_other in pattern_check:
                     #merge check into other and remove check
+                    common_files[pattern_other] = list(set_other.union(set_check))
                     patterns_remove.append(pattern_check)
                     break
                 elif pattern_other in pattern_check:
                     #merge other into check and remove other
                     patterns_remove.append(pattern_other)
+                    common_files[pattern_check] = list(set_other.union(set_check))
                     break
                 
     print(patterns_remove)
