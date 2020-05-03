@@ -56,6 +56,24 @@ def xas_read_files(argv, pdf_path = "ascii"):
             another_file = ""
             #pattern_current = get_common(pattern_current, file_name)
         print(file_name, pattern_current)
+    patterns_found = common_files.keys()
+    patterns_remove = []
+
+    # remove subindices from the matches
+    for pattern_check in common_files:
+        for pattern_other in patterns_found:
+            if pattern_other != pattern_check:
+                if pattern_other in pattern_check:
+                    #merge check into other and remove check
+                    patterns_remove.append(pattern_check)
+                    break
+                elif pattern_other in pattern_check:
+                    #merge other into check and remove other
+                    patterns_remove.append(pattern_other)
+                    break
+                
+    print(patterns_remove)
+    
     for pattern in common_files:
         print(len(common_files[pattern]), "files with pattern" , pattern, "\nFiles: ", common_files[pattern])
     
