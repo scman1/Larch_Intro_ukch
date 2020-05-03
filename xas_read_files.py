@@ -43,7 +43,6 @@ def xas_read_files(argv):
     print("Found ", len(files_list), "to process with pattern:", name_pattern)
     for index, a_file in enumerate(files_list):
         file_name = a_file.name
-        print(file_name)
         if index < len(files_list)-1:
             another_file = files_list[index+1].name
             common_pattern = get_common(file_name, another_file)
@@ -60,9 +59,7 @@ def xas_read_files(argv):
                 pattern_current = ""
         else:
             another_file = ""
-            #pattern_current = get_common(pattern_current, file_name)
 
-    print("initial groups:", common_files)
     patterns_found = common_files.keys()
     patterns_remove = []
 
