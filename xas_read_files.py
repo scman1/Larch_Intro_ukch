@@ -27,6 +27,16 @@ def get_common(file_1, file_2):
          print ('No longest common sub-string found') 
     return common_pattern
 
+# xas_read_files groups files in a directory according to common text patterns
+# assuming that patterns correspond to files which must be processed together
+# input:
+#  - the directory path where the files to be processed are placed
+#  - the string wich is used to filter the files to process (use wildcad caracheters)
+# output:
+#  - an indexed list of files, which uses common patterns found as keys
+
+# the next step is to process groups of files using larch, whit the same defaults
+# as athena and save the results as athena project files.
 def xas_read_files(argv):
     try:
         pdf_path = argv[0]
