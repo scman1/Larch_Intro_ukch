@@ -5,14 +5,73 @@ from pathlib import Path
 import sys
 from difflib import SequenceMatcher 
 
+# get_file_groups:
+# groups files in a directory according to common text patterns assuming that 
+# patterns correspond to files which must be processed together. 
+# input:
+#  - the directory path where the files to be processed are placed
+#  - the string which is used to filter the files to process (wildcad caracheters)
+# output:
+#  - an indexed list of files, which uses common patterns found as keys
 
-def get_files_list(source_dir, filename_pattern):
-    i_counter = 0
+def get_file_groups(source_dir, filename_pattern):
+    #i_counter = 0
     files_list = []
+    
+    
     for filepath in sorted(source_dir.glob(filename_pattern)):
-        i_counter += 1
+        #i_counter += 1
         files_list.append(filepath)
-    return files_list
+    
+    print("Found ", len(files_list), "to process with pattern:", filename_pattern)
+    pattern_current = ""
+    file_groups = {}
+    for index, a_file in enumerate(files_list):
+        file_name = a_file.name
+        if index < len(files_list)-1:
+            another_file = files_list[index+1].name
+            common_pattern = get_common(file_name, another_file)
+            if pattern_current == "":
+                pattern_current = common_pattern
+                if pattern_current in file_groups:
+                    file_groups[pattern_current] += [file_name, another_file]
+                else:
+                    file_groups[pattern_current] = [file_name, another_file]
+            elif pattern_current == common_pattern:
+                file_groups[pattern_current].append(another_file)
+            else:
+                pattern_current = ""
+        else:
+            another_file = ""
+
+    patterns_found = file_groups.keys()
+    patterns_remove = []
+
+    # mark redundant patterns to remove
+    for pattern_check in file_groups:
+        for pattern_other in patterns_found:
+            if pattern_other != pattern_check:
+                # use sets to ignore duplicates
+                set_check = set(file_groups[pattern_check])
+                set_other = set(file_groups[pattern_other])
+                if pattern_other in pattern_check:
+                    #merge check into other and remove check
+                    file_groups[pattern_other] = list(set_other.union(set_check))
+                    patterns_remove.append(pattern_check)
+                elif pattern_other in pattern_check:
+                    #merge other into check and remove other
+                    patterns_remove.append(pattern_other)
+                    file_groups[pattern_check] = list(set_other.union(set_check))
+
+    # remove redundant patterns
+    if len(patterns_remove) > 0:
+        for pattern_rem in patterns_remove:
+            file_groups.pop(pattern_rem)
+    
+    for pattern in file_groups:
+        print(len(file_groups[pattern]), "files to process with pattern" , pattern, "\nFiles: ", file_groups[pattern])
+        
+    return file_groups
 
 
 # get the common pattern between the two strings
@@ -27,18 +86,17 @@ def get_common(file_1, file_2):
          print ('No longest common sub-string found') 
     return common_pattern
 
-# xas_read_files groups files in a directory according to common text patterns
-# assuming that patterns correspond to files which must be processed together
-# input:
-#  - the directory path where the files to be processed are placed
-#  - the string wich is used to filter the files to process (use wildcad caracheters)
-# output:
-#  - an indexed list of files, which uses common patterns found as keys
+# xas_read_files
+# groups files in a directory according to common text patterns
+# process groups of files using larch with defaults:
+#   get mu (calculate if needed)
+#   get normal, pre-edge and post-edge E0
+#   merge groups
+#   save diagrams
 
-# the next step is to process groups of files using larch, whit the same defaults
-# as athena and save the results as athena project files.
 def xas_read_files(argv):
     try:
+        # required
         pdf_path = argv[0]
         name_pattern = argv[1]
     except:
@@ -47,56 +105,9 @@ def xas_read_files(argv):
               "\n -string file pattern (eg: *experiment_FeO2_sample*)")
         return
     pdf_dir= Path(pdf_path)
-    files_list = get_files_list(pdf_dir, name_pattern)
-    pattern_current = ""
-    common_files = {}
-    print("Found ", len(files_list), "to process with pattern:", name_pattern)
-    for index, a_file in enumerate(files_list):
-        file_name = a_file.name
-        if index < len(files_list)-1:
-            another_file = files_list[index+1].name
-            common_pattern = get_common(file_name, another_file)
-            #common_pattern = file_name[match.a: match.a + match.size]
-            if pattern_current == "":
-                pattern_current = common_pattern
-                if pattern_current in common_files:
-                    common_files[pattern_current] += [file_name, another_file]
-                else:
-                    common_files[pattern_current] = [file_name, another_file]
-            elif pattern_current == common_pattern:
-                common_files[pattern_current].append(another_file)
-            else:
-                pattern_current = ""
-        else:
-            another_file = ""
+    files_list = get_file_groups(pdf_dir, name_pattern)
 
-    patterns_found = common_files.keys()
-    patterns_remove = []
 
-    # mark redundant patterns to remove
-    for pattern_check in common_files:
-        for pattern_other in patterns_found:
-            if pattern_other != pattern_check:
-                # use sets to ignore duplicates
-                set_check = set(common_files[pattern_check])
-                set_other = set(common_files[pattern_other])
-                if pattern_other in pattern_check:
-                    #merge check into other and remove check
-                    common_files[pattern_other] = list(set_other.union(set_check))
-                    patterns_remove.append(pattern_check)
-                elif pattern_other in pattern_check:
-                    #merge other into check and remove other
-                    patterns_remove.append(pattern_other)
-                    common_files[pattern_check] = list(set_other.union(set_check))
-
-    # remove redundant patterns
-    if len(patterns_remove) > 0:
-        for pattern_rem in patterns_remove:
-            common_files.pop(pattern_rem)
-    
-    for pattern in common_files:
-        print(len(common_files[pattern]), "files to process with pattern" , pattern, "\nFiles: ", common_files[pattern])
-    
 if __name__ == "__main__":
    xas_read_files(sys.argv[1:])
 
