@@ -3,7 +3,18 @@
 # import library for managing files
 from pathlib import Path
 import sys
-from difflib import SequenceMatcher 
+from difflib import SequenceMatcher
+
+# files for processing xas data
+import numpy as np
+import pylab
+import larch
+
+# now import larch-specific Python code
+from larch_plugins.xafs import autobk, xftf
+
+# create a larch interpreter, passed to most functions
+my_larch = larch.Interpreter()
 
 # get_file_groups:
 # groups files in a directory according to common text patterns assuming that 
@@ -97,16 +108,89 @@ def get_common(file_1, file_2):
 def xas_read_files(argv):
     try:
         # required
-        pdf_path = argv[0]
+        file_path = argv[0]
         name_pattern = argv[1]
     except:
         print("missing arguments"+
               "\n -string files path (eg: ../documents/ascii_path)"+
               "\n -string file pattern (eg: *experiment_FeO2_sample*)")
         return
-    pdf_dir= Path(pdf_path)
-    files_list = get_file_groups(pdf_dir, name_pattern)
+    file_dir= Path(file_path)
+    file_groups = get_file_groups(file_dir, name_pattern)
+    print(file_groups)
+    groups = []
+    for pattern in file_groups:
+        for file in file_groups[pattern]:
+            file_path = file_dir / file
+            xafsdat = larch.io.read_ascii(file_path)
+            # especify data columns
+            # energy 0
+            # time   1
+            # i0     2
+            # it     3
+            # ir     4
+            # mu     5
+            # mur    6
+            xafsdat.energy = xafsdat.data[0]
+            xafsdat.time =   xafsdat.data[1]
+            xafsdat.i0 =     xafsdat.data[2]
+            xafsdat.it =     xafsdat.data[3]
+            xafsdat.ir =     xafsdat.data[4]
+            xafsdat.mu =     xafsdat.data[5]
+            xafsdat.mue =    xafsdat.data[6]
+            # run autobk on the xafsdat Group, including a larch Interpreter....
+            # note that this expects 'energy' and 'mu' to be in xafsdat, and will
+            # write data for 'k', 'chi', 'kwin', 'e0', ... into xafsdat
+            autobk(xafsdat, rbkg=1.0, kweight=2, _larch=my_larch)
+            
+            # Fourier transform to R space, again passing in a Group (here,
+            # 'k' and 'chi' are expected, and writitng out 'r', 'chir_mag',
+            # and so on
+            xftf(xafsdat, kmin=2, kmax=15, dk=3, kweight=2, _larch=my_larch)
 
+            # add group to list
+            groups.append(xafsdat)
+            
+            #
+            # plot grid of results:
+            # mu + bkg
+            pylab.subplot(2, 2, 1)
+            pylab.plot(xafsdat.energy, xafsdat.bkg, 'r--')
+            pylab.plot(xafsdat.energy, xafsdat.mu)
+            pylab.xlabel('Energy (eV)')
+
+            # normalized XANES
+            # find array bounds for normalized mu(E) for [e0 - 25: e0 + 75]
+            j0 = np.abs(xafsdat.energy-(xafsdat.e0 - 25.0)).argmin()
+            j1 = np.abs(xafsdat.energy-(xafsdat.e0 + 75.0)).argmin()
+
+            pylab.subplot(2, 2, 2)
+            pylab.plot(xafsdat.energy[j0:j1], xafsdat.norm[j0:j1])
+            pylab.xlabel('Energy (eV)')
+
+            # chi(k)
+            pylab.subplot(2, 2, 3)
+            pylab.plot(xafsdat.k, xafsdat.chi*xafsdat.k**2)
+            pylab.plot(xafsdat.k, xafsdat.kwin, 'r--')
+            pylab.xlabel(r'$ k (\AA^{-1}) $')
+            pylab.ylabel(r'$ k^2 \chi(\AA^{-2}) $')
+
+            # chi(R)
+            pylab.subplot(2, 2, 4)
+            pylab.plot(xafsdat.r, xafsdat.chir_mag)
+            pylab.plot(xafsdat.r, xafsdat.chir_re, 'r--')
+            pylab.xlabel(r'$ R (\AA) $')
+            pylab.ylabel(r'$ \chi(R) (\AA^{-3}) $')
+
+            save_as = file_dir / 'processed' / (file[:-4] + ".jpg")
+            if not save_as.parent.exists():
+                save_as.parent.mkdir()
+                
+            pylab.savefig(str(save_as))
+            pylab.show()
+
+    print("Processed groups for pattern:", len(groups), groups)
+    
 
 if __name__ == "__main__":
    xas_read_files(sys.argv[1:])

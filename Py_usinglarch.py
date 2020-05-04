@@ -10,8 +10,7 @@ from larch_plugins.xafs import autobk, xftf
 # create a larch interpreter, passed to most functions
 my_larch = larch.Interpreter()
 
-# read data (here using np.loadtxt), stick into Group
-# using "expected names" for XAFS data
+# read data (here using larch.io.read_ascii)
 xafsdat = larch.io.read_ascii('ascii/223752_sample1_insitu_ramp_He_2.dat')
 
 # especify data columns
@@ -29,8 +28,6 @@ xafsdat.it =     xafsdat.data[3]
 xafsdat.ir =     xafsdat.data[4]
 xafsdat.mu =     xafsdat.data[5]
 xafsdat.mue =    xafsdat.data[6]
-
-
 
 # run autobk on the xafsdat Group, including a larch Interpreter....
 # note that this expects 'energy' and 'mu' to be in xafsdat, and will
