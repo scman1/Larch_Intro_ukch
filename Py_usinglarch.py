@@ -12,10 +12,25 @@ my_larch = larch.Interpreter()
 
 # read data (here using np.loadtxt), stick into Group
 # using "expected names" for XAFS data
-xafsdat = larch.io.read_ascii('XAFSExamples/Fe_standards/Fe_lepidocrocite.000')
+xafsdat = larch.io.read_ascii('ascii/223752_sample1_insitu_ramp_He_2.dat')
 
-# calculate mu
-xafsdat.mu = np.log(abs(xafsdat.i0/xafsdat.it))
+# especify data columns
+# energy 0
+# time   1
+# i0     2
+# it     3
+# ir     4
+# mu     5
+# mur    6
+xafsdat.energy = xafsdat.data[0]
+xafsdat.time =   xafsdat.data[1]
+xafsdat.i0 =     xafsdat.data[2]
+xafsdat.it =     xafsdat.data[3]
+xafsdat.ir =     xafsdat.data[4]
+xafsdat.mu =     xafsdat.data[5]
+xafsdat.mue =    xafsdat.data[6]
+
+
 
 # run autobk on the xafsdat Group, including a larch Interpreter....
 # note that this expects 'energy' and 'mu' to be in xafsdat, and will
