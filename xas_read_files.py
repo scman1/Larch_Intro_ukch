@@ -15,6 +15,9 @@ import larch
 # now import larch-specific Python code
 from larch_plugins.xafs import autobk, xftf
 
+# import the larch.io function for merging groups interpolating if necessary
+from larch.io import merge_groups
+
 # create a larch interpreter, passed to most functions
 my_larch = larch.Interpreter()
 
@@ -99,13 +102,78 @@ def get_common(file_1, file_2):
          print ('No longest common sub-string found') 
     return common_pattern
 
+# basic plot of a group
+def basic_plot(xas_group, dest_dir):
+    # plot individual groups
+    fig=plt.figure(figsize=(10,8))
+    plt.tick_params(axis='both', labelsize=6)
+
+    #
+    # plot grid of results:
+    # mu + bkg
+    plt.subplot(2, 2, 1)
+    plt.title('$\mu$ and background')
+    plt.plot(xas_group.energy, xas_group.bkg, 'r--', label = 'background')
+    plt.plot(xas_group.energy, xas_group.mu, label = "$\mu$")
+    plt.xlabel('Energy (eV)')
+    plt.grid(linestyle=':', linewidth=1)
+    plt.legend()
+
+    # normalized XANES
+    # find array bounds for normalized mu(E) for [e0 - 25: e0 + 75]
+    j0 = np.abs(xas_group.energy-(xas_group.e0 - 25.0)).argmin()
+    j1 = np.abs(xas_group.energy-(xas_group.e0 + 75.0)).argmin()
+
+    
+    plt.subplot(2, 2, 2)
+    plt.title('normalized $\mu$')
+    plt.plot(xas_group.energy[j0:j1], xas_group.norm[j0:j1], label="$\mu$ Normalised")
+    plt.xlabel('Energy (eV)')
+    plt.grid(linestyle=':', linewidth=1)
+    plt.legend()
+    
+    # chi(k)
+    plt.subplot(2, 2, 3)
+    plt.title(r"$\chi(k)$")
+    plt.plot(xas_group.k, xas_group.chi*xas_group.k**2, label= r'$ \chi(k^2)$')
+    plt.plot(xas_group.k, xas_group.kwin, 'r--', label= r'$k$ window')
+    plt.xlabel(r'$ k (\AA^{-1}) $', fontsize='small')
+    plt.ylabel(r'$ k^2 \chi(\AA^{-2}) $', fontsize='small')
+    plt.grid(linestyle=':', linewidth=1)
+    plt.legend()
+
+    # chi(R)
+    plt.subplot(2, 2, 4)
+    plt.title(r"$\chi(R)$")
+    plt.plot(xas_group.r, xas_group.chir_mag, label = r"$\chi(R)$ magnitude")
+    plt.plot(xas_group.r, xas_group.chir_re, 'r--', label = r"$\chi(R)$ re")
+    plt.xlabel(r'$ R (\AA) $',fontsize='small')
+    plt.ylabel(r'$ \chi(R) (\AA^{-3}) $', fontsize='small')
+    plt.grid(linestyle=':', linewidth=1)
+    plt.legend()
+
+    
+    save_as = dest_dir / (xas_group.label + "_01.jpg")
+
+    if not save_as.parent.exists():
+        save_as.parent.mkdir(parents=True)
+        
+    fig.tight_layout(pad=3.0)
+    fig.suptitle(xas_group.label)    
+    plt.savefig(str(save_as))
+    
+    plt.clf()
+
 # xas_read_files
 # groups files in a directory according to common text patterns
 # process groups of files using larch with defaults:
 #   get mu (calculate if needed)
 #   get normal, pre-edge and post-edge E0
+#   plot groups
 #   merge groups
+#   plot merge
 #   save diagrams
+#   save all as athena project
 
 def xas_read_files(argv):
     try:
@@ -121,8 +189,11 @@ def xas_read_files(argv):
     file_groups = get_file_groups(file_dir, name_pattern)
     print(file_groups)
     groups = []
+    
+    # process file groups
     for pattern in file_groups:
         for file in file_groups[pattern]:
+            save_dir = file_dir / 'result' / pattern[1:][:-1]
             file_path = file_dir / file
             xafsdat = larch.io.read_ascii(file_path)
             # especify data columns
@@ -150,69 +221,23 @@ def xas_read_files(argv):
             # and so on
             xftf(xafsdat, kmin=2, kmax=15, dk=3, kweight=2, _larch=my_larch)
 
+            xafsdat.label = xafsdat.filename[:-4]
+            
             # add group to list
             groups.append(xafsdat)
 
-            # plot individual groups
-            fig=plt.figure(figsize=(10,8))
-            plt.tick_params(axis='both', labelsize=6)
-
-
-            #
-            # plot grid of results:
-            # mu + bkg
-            plt.subplot(2, 2, 1)
-            plt.title('$\mu$ and background')
-            plt.plot(xafsdat.energy, xafsdat.bkg, 'r--', label = 'background')
-            plt.plot(xafsdat.energy, xafsdat.mu, label = "$\mu$")
-            plt.xlabel('Energy (eV)')
-            plt.grid(linestyle=':', linewidth=1)
-            plt.legend()
-
-            # normalized XANES
-            # find array bounds for normalized mu(E) for [e0 - 25: e0 + 75]
-            j0 = np.abs(xafsdat.energy-(xafsdat.e0 - 25.0)).argmin()
-            j1 = np.abs(xafsdat.energy-(xafsdat.e0 + 75.0)).argmin()
-
             
-            plt.subplot(2, 2, 2)
-            plt.title('normalized $\mu$')
-            plt.plot(xafsdat.energy[j0:j1], xafsdat.norm[j0:j1], label="$\mu$ Normalised")
-            plt.xlabel('Energy (eV)')
-            plt.grid(linestyle=':', linewidth=1)
-            plt.legend()
+            # plot and save each file in group 
+            basic_plot(xafsdat, save_dir)
             
-            # chi(k)
-            plt.subplot(2, 2, 3)
-            plt.title(r"$\chi(k)$")
-            plt.plot(xafsdat.k, xafsdat.chi*xafsdat.k**2, label= r'$ \chi(k^2)$')
-            plt.plot(xafsdat.k, xafsdat.kwin, 'r--', label= r'$k$ window')
-            plt.xlabel(r'$ k (\AA^{-1}) $', fontsize='small')
-            plt.ylabel(r'$ k^2 \chi(\AA^{-2}) $', fontsize='small')
-            plt.grid(linestyle=':', linewidth=1)
-            plt.legend()
-
-            # chi(R)
-            plt.subplot(2, 2, 4)
-            plt.title(r"$\chi(R)$")
-            plt.plot(xafsdat.r, xafsdat.chir_mag, label = r"$\chi(R)$ magnitude")
-            plt.plot(xafsdat.r, xafsdat.chir_re, 'r--', label = r"$\chi(R)$ re")
-            plt.xlabel(r'$ R (\AA) $',fontsize='small')
-            plt.ylabel(r'$ \chi(R) (\AA^{-3}) $', fontsize='small')
-            plt.grid(linestyle=':', linewidth=1)
-            plt.legend()
- 
-            save_as = file_dir / 'processed' / pattern[1:][:-1] / (file[:-4] + "_01.jpg")
-            if not save_as.parent.exists():
-                save_as.parent.mkdir()
-                
-            fig.tight_layout(pad=3.0)
-            fig.suptitle(file[:-4])    
-            plt.savefig(str(save_as))
-            
-            plt.clf()
-            
-
+        # merge groups
+        merged_group = merge_groups(groups)
+        merged_group.label = pattern[1:][:-1] + "_merge"
+        autobk(merged_group, rbkg=1.0, kweight=2, _larch=my_larch)
+        xftf(merged_group, kmin=2, kmax=15, dk=3, kweight=2, _larch=my_larch)
+        basic_plot(merged_group, save_dir)
+        groups.append(merged_group)
+    
     print("Processed groups for pattern:", len(groups), groups)
     
 
