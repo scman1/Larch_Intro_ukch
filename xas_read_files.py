@@ -18,6 +18,9 @@ from larch_plugins.xafs import autobk, xftf
 # import the larch.io function for merging groups interpolating if necessary
 from larch.io import merge_groups
 
+# import the larch.io libraries for managing athena files
+from larch.io import create_athena, read_athena, extract_athenagroup
+
 # create a larch interpreter, passed to most functions
 my_larch = larch.Interpreter()
 
@@ -103,6 +106,9 @@ def get_common(file_1, file_2):
     return common_pattern
 
 # basic plot of a group
+# input:
+#   - a larch xas group
+#   - the detination dir (where to save)
 def basic_plot(xas_group, dest_dir):
     # plot individual groups
     fig=plt.figure(figsize=(10,8))
@@ -238,7 +244,16 @@ def xas_read_files(argv):
         basic_plot(merged_group, save_dir)
         groups.append(merged_group)
     
-    print("Processed groups for pattern:", len(groups), groups)
+        print("Processed groups (including merge):", len(groups), groups)
+
+       # save as an athena project
+
+        project_name = save_dir / (pattern[1:][:-1] + '.prj')
+        athena_project = create_athena(project_name)
+        for a_group in groups:
+            athena_project.add_group(a_group)
+        athena_project.save()
+        
     
 
 if __name__ == "__main__":
