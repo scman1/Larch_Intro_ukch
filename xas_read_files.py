@@ -154,47 +154,64 @@ def xas_read_files(argv):
             groups.append(xafsdat)
 
             # plot individual groups
-            fig=plt.figure()
+            fig=plt.figure(figsize=(10,8))
+            plt.tick_params(axis='both', labelsize=6)
+
+
             #
             # plot grid of results:
             # mu + bkg
             plt.subplot(2, 2, 1)
-            plt.plot(xafsdat.energy, xafsdat.bkg, 'r--')
-            plt.plot(xafsdat.energy, xafsdat.mu)
+            plt.title('$\mu$ and background')
+            plt.plot(xafsdat.energy, xafsdat.bkg, 'r--', label = 'background')
+            plt.plot(xafsdat.energy, xafsdat.mu, label = "$\mu$")
             plt.xlabel('Energy (eV)')
+            plt.grid(linestyle=':', linewidth=1)
+            plt.legend()
 
             # normalized XANES
             # find array bounds for normalized mu(E) for [e0 - 25: e0 + 75]
             j0 = np.abs(xafsdat.energy-(xafsdat.e0 - 25.0)).argmin()
             j1 = np.abs(xafsdat.energy-(xafsdat.e0 + 75.0)).argmin()
 
+            
             plt.subplot(2, 2, 2)
-            plt.plot(xafsdat.energy[j0:j1], xafsdat.norm[j0:j1])
+            plt.title('normalized $\mu$')
+            plt.plot(xafsdat.energy[j0:j1], xafsdat.norm[j0:j1], label="$\mu$ Normalised")
             plt.xlabel('Energy (eV)')
-
+            plt.grid(linestyle=':', linewidth=1)
+            plt.legend()
+            
             # chi(k)
             plt.subplot(2, 2, 3)
-            plt.plot(xafsdat.k, xafsdat.chi*xafsdat.k**2)
-            plt.plot(xafsdat.k, xafsdat.kwin, 'r--')
-            plt.xlabel(r'$ k (\AA^{-1}) $')
-            plt.ylabel(r'$ k^2 \chi(\AA^{-2}) $')
+            plt.title(r"$\chi(k)$")
+            plt.plot(xafsdat.k, xafsdat.chi*xafsdat.k**2, label= r'$ \chi(k^2)$')
+            plt.plot(xafsdat.k, xafsdat.kwin, 'r--', label= r'$k$ window')
+            plt.xlabel(r'$ k (\AA^{-1}) $', fontsize='small')
+            plt.ylabel(r'$ k^2 \chi(\AA^{-2}) $', fontsize='small')
+            plt.grid(linestyle=':', linewidth=1)
+            plt.legend()
 
             # chi(R)
             plt.subplot(2, 2, 4)
-            plt.plot(xafsdat.r, xafsdat.chir_mag)
-            plt.plot(xafsdat.r, xafsdat.chir_re, 'r--')
-            plt.xlabel(r'$ R (\AA) $')
-            plt.ylabel(r'$ \chi(R) (\AA^{-3}) $')
+            plt.title(r"$\chi(R)$")
+            plt.plot(xafsdat.r, xafsdat.chir_mag, label = r"$\chi(R)$ magnitude")
+            plt.plot(xafsdat.r, xafsdat.chir_re, 'r--', label = r"$\chi(R)$ re")
+            plt.xlabel(r'$ R (\AA) $',fontsize='small')
+            plt.ylabel(r'$ \chi(R) (\AA^{-3}) $', fontsize='small')
+            plt.grid(linestyle=':', linewidth=1)
+            plt.legend()
  
-            save_as = file_dir / 'processed' / pattern[1:][:-1] / (file[:-4] + ".jpg")
+            save_as = file_dir / 'processed' / pattern[1:][:-1] / (file[:-4] + "_01.jpg")
             if not save_as.parent.exists():
                 save_as.parent.mkdir()
-
+                
+            fig.tight_layout(pad=3.0)
             fig.suptitle(file[:-4])    
             plt.savefig(str(save_as))
             
             plt.clf()
-            #pylab.show()
+            
 
     print("Processed groups for pattern:", len(groups), groups)
     
