@@ -152,7 +152,9 @@ def xas_read_files(argv):
 
             # add group to list
             groups.append(xafsdat)
-            
+
+            # plot individual groups
+            fig=plt.figure()
             #
             # plot grid of results:
             # mu + bkg
@@ -187,8 +189,11 @@ def xas_read_files(argv):
             save_as = file_dir / 'processed' / pattern[1:][:-1] / (file[:-4] + ".jpg")
             if not save_as.parent.exists():
                 save_as.parent.mkdir()
-                
+
+            fig.suptitle(file[:-4])    
             plt.savefig(str(save_as))
+            
+            plt.clf()
             #pylab.show()
 
     print("Processed groups for pattern:", len(groups), groups)
