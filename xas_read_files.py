@@ -8,6 +8,8 @@ from difflib import SequenceMatcher
 # files for processing xas data
 import numpy as np
 import pylab
+# ploting library
+import matplotlib.pyplot as plt
 import larch
 
 # now import larch-specific Python code
@@ -154,39 +156,39 @@ def xas_read_files(argv):
             #
             # plot grid of results:
             # mu + bkg
-            pylab.subplot(2, 2, 1)
-            pylab.plot(xafsdat.energy, xafsdat.bkg, 'r--')
-            pylab.plot(xafsdat.energy, xafsdat.mu)
-            pylab.xlabel('Energy (eV)')
+            plt.subplot(2, 2, 1)
+            plt.plot(xafsdat.energy, xafsdat.bkg, 'r--')
+            plt.plot(xafsdat.energy, xafsdat.mu)
+            plt.xlabel('Energy (eV)')
 
             # normalized XANES
             # find array bounds for normalized mu(E) for [e0 - 25: e0 + 75]
             j0 = np.abs(xafsdat.energy-(xafsdat.e0 - 25.0)).argmin()
             j1 = np.abs(xafsdat.energy-(xafsdat.e0 + 75.0)).argmin()
 
-            pylab.subplot(2, 2, 2)
-            pylab.plot(xafsdat.energy[j0:j1], xafsdat.norm[j0:j1])
-            pylab.xlabel('Energy (eV)')
+            plt.subplot(2, 2, 2)
+            plt.plot(xafsdat.energy[j0:j1], xafsdat.norm[j0:j1])
+            plt.xlabel('Energy (eV)')
 
             # chi(k)
-            pylab.subplot(2, 2, 3)
-            pylab.plot(xafsdat.k, xafsdat.chi*xafsdat.k**2)
-            pylab.plot(xafsdat.k, xafsdat.kwin, 'r--')
-            pylab.xlabel(r'$ k (\AA^{-1}) $')
-            pylab.ylabel(r'$ k^2 \chi(\AA^{-2}) $')
+            plt.subplot(2, 2, 3)
+            plt.plot(xafsdat.k, xafsdat.chi*xafsdat.k**2)
+            plt.plot(xafsdat.k, xafsdat.kwin, 'r--')
+            plt.xlabel(r'$ k (\AA^{-1}) $')
+            plt.ylabel(r'$ k^2 \chi(\AA^{-2}) $')
 
             # chi(R)
-            pylab.subplot(2, 2, 4)
-            pylab.plot(xafsdat.r, xafsdat.chir_mag)
-            pylab.plot(xafsdat.r, xafsdat.chir_re, 'r--')
-            pylab.xlabel(r'$ R (\AA) $')
-            pylab.ylabel(r'$ \chi(R) (\AA^{-3}) $')
+            plt.subplot(2, 2, 4)
+            plt.plot(xafsdat.r, xafsdat.chir_mag)
+            plt.plot(xafsdat.r, xafsdat.chir_re, 'r--')
+            plt.xlabel(r'$ R (\AA) $')
+            plt.ylabel(r'$ \chi(R) (\AA^{-3}) $')
  
             save_as = file_dir / 'processed' / pattern[1:][:-1] / (file[:-4] + ".jpg")
             if not save_as.parent.exists():
                 save_as.parent.mkdir()
                 
-            pylab.savefig(str(save_as))
+            plt.savefig(str(save_as))
             #pylab.show()
 
     print("Processed groups for pattern:", len(groups), groups)
