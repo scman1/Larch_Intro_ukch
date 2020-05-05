@@ -181,13 +181,13 @@ def xas_read_files(argv):
             pylab.plot(xafsdat.r, xafsdat.chir_re, 'r--')
             pylab.xlabel(r'$ R (\AA) $')
             pylab.ylabel(r'$ \chi(R) (\AA^{-3}) $')
-
-            save_as = file_dir / 'processed' / (file[:-4] + ".jpg")
+ 
+            save_as = file_dir / 'processed' / pattern[1:][:-1] / (file[:-4] + ".jpg")
             if not save_as.parent.exists():
                 save_as.parent.mkdir()
                 
             pylab.savefig(str(save_as))
-            pylab.show()
+            #pylab.show()
 
     print("Processed groups for pattern:", len(groups), groups)
     
