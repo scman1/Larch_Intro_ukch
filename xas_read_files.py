@@ -13,7 +13,8 @@ from difflib import SequenceMatcher
 import logging
 
 file_dir = Path("log_dir")
-file_dir.mkdir(parents=True)
+if not file_dir.exists():
+    file_dir.mkdir(parents=True)
 
 logging.basicConfig(format='[%(asctime)s] %(message)s', filename='log_dir/processing.log', filemode='w', level=logging.INFO)
 console = logging.StreamHandler()
