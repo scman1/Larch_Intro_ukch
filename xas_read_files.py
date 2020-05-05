@@ -1,9 +1,22 @@
+# script for bulk processing
 # read xas text files from a directory
+# create basic plots of energy and fitting
+# merge groups and save as athena
 
 # import library for managing files
 from pathlib import Path
 import sys
 from difflib import SequenceMatcher
+
+# add logging
+# save processing steps in log file
+import logging
+
+logging.basicConfig(format='[%(asctime)s] %(message)s', filename='processing.log', filemode='w', level=logging.INFO)
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+logging.getLogger('').addHandler(console)
+
 
 # files for processing xas data
 import numpy as np
@@ -41,8 +54,11 @@ def get_file_groups(source_dir, filename_pattern):
     for filepath in sorted(source_dir.glob(filename_pattern)):
         #i_counter += 1
         files_list.append(filepath)
-    
-    print("Found ", len(files_list), "to process with pattern:", filename_pattern)
+    log_message = "Found " + str(len(files_list)) + \
+        " files to process with pattern: " + \
+        filename_pattern + \
+        "in dir: " + str(source_dir)
+    logging.info(log_message)
     pattern_current = ""
     file_groups = {}
     for index, a_file in enumerate(files_list):
@@ -88,8 +104,9 @@ def get_file_groups(source_dir, filename_pattern):
             file_groups.pop(pattern_rem)
     
     for pattern in file_groups:
-        print(len(file_groups[pattern]), "files to process with pattern" , pattern, "\nFiles: ", file_groups[pattern])
         
+        log_message = str(len(file_groups[pattern])) + " files to process with pattern " + pattern + "\nFiles: " + str(file_groups[pattern])
+        logging.info(log_message)
     return file_groups
 
 
@@ -99,10 +116,10 @@ def get_common(file_1, file_2):
     seqMatch = SequenceMatcher(None, file_1, file_2)
     match = seqMatch.find_longest_match(0, len(file_1), 0, len(file_2))
     if (match.size!=0): 
-        #print (match)
         common_pattern = file_1[match.a: match.a + match.size]
     else: 
-         print ('No longest common sub-string found') 
+         log_message = 'No longest common sub-string found'
+         logging.info(log_message)
     return common_pattern
 
 # basic plot of a group
@@ -110,11 +127,9 @@ def get_common(file_1, file_2):
 #   - a larch xas group
 #   - the detination dir (where to save)
 def basic_plot(xas_group, dest_dir):
-    # plot individual groups
     fig=plt.figure(figsize=(10,8))
     plt.tick_params(axis='both', labelsize=6)
-
-    #
+    
     # plot grid of results:
     # mu + bkg
     plt.subplot(2, 2, 1)
@@ -193,11 +208,11 @@ def xas_read_files(argv):
         return
     file_dir= Path(file_path)
     file_groups = get_file_groups(file_dir, name_pattern)
-    print(file_groups)
-    groups = []
+    
     
     # process file groups
     for pattern in file_groups:
+        groups = []
         for file in file_groups[pattern]:
             save_dir = file_dir / 'result' / pattern[1:][:-1]
             file_path = file_dir / file
@@ -243,17 +258,18 @@ def xas_read_files(argv):
         xftf(merged_group, kmin=2, kmax=15, dk=3, kweight=2, _larch=my_larch)
         basic_plot(merged_group, save_dir)
         groups.append(merged_group)
-    
-        print("Processed groups (including merge):", len(groups), groups)
 
-       # save as an athena project
+        log_message = "Processed groups (including merge): " + str(len(groups)) + " for pattern " + (pattern[1:][:-1])
+        logging.info(log_message)
+        
+        # save as an athena project
 
         project_name = save_dir / (pattern[1:][:-1] + '.prj')
         athena_project = create_athena(project_name)
         for a_group in groups:
             athena_project.add_group(a_group)
         athena_project.save()
-        
+        log_message = "Saved athena project " + str(project_name)
     
 
 if __name__ == "__main__":
