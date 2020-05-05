@@ -12,7 +12,10 @@ from difflib import SequenceMatcher
 # save processing steps in log file
 import logging
 
-logging.basicConfig(format='[%(asctime)s] %(message)s', filename='processing.log', filemode='w', level=logging.INFO)
+file_dir = Path("log_dir")
+file_dir.mkdir(parents=True)
+
+logging.basicConfig(format='[%(asctime)s] %(message)s', filename='log_dir/processing.log', filemode='w', level=logging.INFO)
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
 logging.getLogger('').addHandler(console)
