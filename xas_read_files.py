@@ -323,10 +323,6 @@ def xas_read_files(argv):
 
             # save energy v normalised mu
             save_e_nmu(xafsdat, save_dir)
-##            export = {}
-##            for n_index, value in enumerate(xafsdat.energy):
-##                export[n_index] = {'energy':value, 'norm':xafsdat.norm[n_index]}
-##            write_csv_data(export, save_dir/(xafsdat.label+"_EvNm.csv"))
         # merge groups
         merged_group = merge_groups(groups)
         merged_group.label = pattern[1:][:-1] + "_merge"
@@ -336,11 +332,6 @@ def xas_read_files(argv):
         basic_plot(merged_group, save_dir)
         # save energy v normalised mu for merge
         save_e_nmu(merged_group, save_dir)
-##        export = {}
-##        for n_index, value in enumerate(merged_group.energy):
-##            export[n_index] = {'energy':value, 'norm':merged_group.norm[n_index]}
-##        write_csv_data(export, save_dir/(merged_group.label+"_EvNm.csv"))
-
         
         groups.append(merged_group)
 
