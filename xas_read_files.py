@@ -8,6 +8,35 @@ from pathlib import Path
 import sys
 from difflib import SequenceMatcher
 
+# import library for managing csv files
+import csv
+
+# get the data from the csv_file, assuming first column is integer id
+def get_csv_data(input_file, id_field):
+    csv_data = {}
+    fieldnames=[]
+    with open(input_file, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            if fieldnames==[]:
+                fieldnames=list(row.keys())
+            csv_data[int(row[id_field])]=row
+    return csv_data, fieldnames
+
+# writes data to the given file name
+def write_csv_data(values, filename):
+    fieldnames = []
+    for item in values.keys():
+        for key in values[item].keys():
+            if not key in fieldnames:
+                fieldnames.append(key)
+    #write back to a new csv file
+    with open(filename, 'w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for key in values.keys():
+            writer.writerow(values[key])
+
 # add logging
 # save processing steps in log file
 import logging
@@ -281,16 +310,21 @@ def xas_read_files(argv):
             # add group to list
             groups.append(xafsdat)
 
-            
             # plot and save each file in group 
             basic_plot(xafsdat, save_dir)
+
+            # save energy v normalised mu
             
         # merge groups
         merged_group = merge_groups(groups)
         merged_group.label = pattern[1:][:-1] + "_merge"
         autobk(merged_group, rbkg=1.0, kweight=2, _larch=my_larch)
         xftf(merged_group, kmin=2, kmax=15, dk=3, kweight=2, _larch=my_larch)
+        # plot and save for merge
         basic_plot(merged_group, save_dir)
+        # save energy v normalised mu for merge
+    
+        
         groups.append(merged_group)
 
         log_message = "Processed groups (including merge): " + str(len(groups)) + " for pattern " + (pattern[1:][:-1])
