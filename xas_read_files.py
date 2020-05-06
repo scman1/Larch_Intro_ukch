@@ -161,7 +161,7 @@ def get_common(file_1, file_2):
 # input:
 #   - a larch xas group
 #   - the detination dir (where to save)
-def basic_plot(xas_group, dest_dir):
+def basic_plot(xas_group, dest_dir, show_plot = False):
     fig=plt.figure(figsize=(10,8))
     plt.tick_params(axis='both', labelsize=6)
     
@@ -217,7 +217,8 @@ def basic_plot(xas_group, dest_dir):
     fig.tight_layout(pad=3.0)
     fig.suptitle(xas_group.label)    
     plt.savefig(str(save_as))
-    
+    if show_plot:
+        plt.show()
     plt.clf()
 
 # xas_read_files
@@ -314,7 +315,10 @@ def xas_read_files(argv):
             basic_plot(xafsdat, save_dir)
 
             # save energy v normalised mu
-            
+            export = {}
+            for n_index, value in enumerate(xafsdat.energy):
+                export[n_index] = {'energy':value, 'norm':xafsdat.norm[n_index]}
+            write_csv_data(export, save_dir/(xafsdat.label+"_EvNm.csv"))
         # merge groups
         merged_group = merge_groups(groups)
         merged_group.label = pattern[1:][:-1] + "_merge"
@@ -323,7 +327,11 @@ def xas_read_files(argv):
         # plot and save for merge
         basic_plot(merged_group, save_dir)
         # save energy v normalised mu for merge
-    
+        export = {}
+        for n_index, value in enumerate(merged_group.energy):
+            export[n_index] = {'energy':value, 'norm':merged_group.norm[n_index]}
+        write_csv_data(export, save_dir/(merged_group.label+"_EvNm.csv"))
+
         
         groups.append(merged_group)
 
