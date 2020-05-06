@@ -221,6 +221,13 @@ def basic_plot(xas_group, dest_dir, show_plot = False):
         plt.show()
     plt.clf()
 
+# save energy and normalised mu
+def save_e_nmu(xafsgroup, save_dir):
+    export = {}
+    for n_index, value in enumerate(xafsgroup.energy):
+        export[n_index] = {'energy':value, 'norm':xafsgroup.norm[n_index]}
+    write_csv_data(export, save_dir/(xafsgroup.label+"_EvNm.csv"))
+
 # xas_read_files
 # groups files in a directory according to common text patterns
 # process groups of files using larch with defaults:
@@ -315,10 +322,11 @@ def xas_read_files(argv):
             basic_plot(xafsdat, save_dir)
 
             # save energy v normalised mu
-            export = {}
-            for n_index, value in enumerate(xafsdat.energy):
-                export[n_index] = {'energy':value, 'norm':xafsdat.norm[n_index]}
-            write_csv_data(export, save_dir/(xafsdat.label+"_EvNm.csv"))
+            save_e_nmu(xafsdat, save_dir)
+##            export = {}
+##            for n_index, value in enumerate(xafsdat.energy):
+##                export[n_index] = {'energy':value, 'norm':xafsdat.norm[n_index]}
+##            write_csv_data(export, save_dir/(xafsdat.label+"_EvNm.csv"))
         # merge groups
         merged_group = merge_groups(groups)
         merged_group.label = pattern[1:][:-1] + "_merge"
@@ -327,10 +335,11 @@ def xas_read_files(argv):
         # plot and save for merge
         basic_plot(merged_group, save_dir)
         # save energy v normalised mu for merge
-        export = {}
-        for n_index, value in enumerate(merged_group.energy):
-            export[n_index] = {'energy':value, 'norm':merged_group.norm[n_index]}
-        write_csv_data(export, save_dir/(merged_group.label+"_EvNm.csv"))
+        save_e_nmu(merged_group, save_dir)
+##        export = {}
+##        for n_index, value in enumerate(merged_group.energy):
+##            export[n_index] = {'energy':value, 'norm':merged_group.norm[n_index]}
+##        write_csv_data(export, save_dir/(merged_group.label+"_EvNm.csv"))
 
         
         groups.append(merged_group)
