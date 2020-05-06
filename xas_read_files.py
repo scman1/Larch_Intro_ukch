@@ -21,6 +21,8 @@ console = logging.StreamHandler()
 console.setLevel(logging.INFO)
 logging.getLogger('').addHandler(console)
 
+# add a configuration file to read parameters
+import configparser
 
 # files for processing xas data
 import numpy as np
@@ -29,7 +31,7 @@ import pylab
 import matplotlib.pyplot as plt
 import larch
 
-# now import larch-specific Python code
+# larch-xas processing functions
 from larch_plugins.xafs import autobk, xftf
 
 # import the larch.io function for merging groups interpolating if necessary
@@ -210,7 +212,42 @@ def xas_read_files(argv):
               "\n -string files path (eg: ../documents/ascii_path)"+
               "\n -string file pattern (eg: *experiment_FeO2_sample*)")
         return
+    
     file_dir= Path(file_path)
+    # initialisation file
+    ini_file = file_dir / "xas_processing.ini"
+    data_columns = {}
+    if ini_file.exists():
+        log_message = 'reading ini file: '+ str(ini_file)
+        logging.info(log_message) 
+        xas_config = configparser.ConfigParser()
+        xas_config.read(ini_file)
+        # especify data columns
+        data_columns['energy'] = int(xas_config['Data_Columns']["col_energy"])
+        data_columns['time'] = int(xas_config['Data_Columns']["col_time"])
+        data_columns['i0'] = int(xas_config['Data_Columns']["col_i0"])
+        data_columns['it'] = int(xas_config['Data_Columns']["col_it"])
+        data_columns['ir'] = int(xas_config['Data_Columns']["col_ir"])
+        data_columns['mu'] = int(xas_config['Data_Columns']["col_mu"])
+        data_columns['mur'] = int(xas_config['Data_Columns']["col_mur"])
+    else:
+        log_message = 'missing ini file: '+ str(ini_file)
+        logging.info(log_message)
+        log_message = 'using defaults'
+        logging.info(log_message)
+        # especify data columns
+        # energy 0
+        # time   1
+        # i0     2
+        # it     3
+        # ir     4
+        # mu     5
+        # mur    6
+        data_columns = {'energy':0, 'time':1,'i0':2,'it':3,'ir':4, 'mu':5,
+                        'mur': 6}
+    log_message = "data_columns:" + str(data_columns)
+    logging.info(log_message)
+        
     file_groups = get_file_groups(file_dir, name_pattern)
     
     
@@ -221,21 +258,14 @@ def xas_read_files(argv):
             save_dir = file_dir / 'result' / pattern[1:][:-1]
             file_path = file_dir / file
             xafsdat = larch.io.read_ascii(file_path)
-            # especify data columns
-            # energy 0
-            # time   1
-            # i0     2
-            # it     3
-            # ir     4
-            # mu     5
-            # mur    6
-            xafsdat.energy = xafsdat.data[0]
-            xafsdat.time =   xafsdat.data[1]
-            xafsdat.i0 =     xafsdat.data[2]
-            xafsdat.it =     xafsdat.data[3]
-            xafsdat.ir =     xafsdat.data[4]
-            xafsdat.mu =     xafsdat.data[5]
-            xafsdat.mue =    xafsdat.data[6]
+            # get data columns specified in ini_file
+            xafsdat.energy = xafsdat.data[data_columns['energy']]
+            xafsdat.time =   xafsdat.data[data_columns['time']]
+            xafsdat.i0 =     xafsdat.data[data_columns['i0']]
+            xafsdat.it =     xafsdat.data[data_columns['it']]
+            xafsdat.ir =     xafsdat.data[data_columns['ir']]
+            xafsdat.mu =     xafsdat.data[data_columns['mu']]
+            xafsdat.mue =    xafsdat.data[data_columns['mur']]
             # run autobk on the xafsdat Group, including a larch Interpreter....
             # note that this expects 'energy' and 'mu' to be in xafsdat, and will
             # write data for 'k', 'chi', 'kwin', 'e0', ... into xafsdat
