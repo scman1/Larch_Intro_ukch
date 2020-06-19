@@ -34,7 +34,9 @@ def calc_with_defaults(xafs_group):
     return xafs_group
 
 # plot mu vs flat normalised mu for selected groups
-def plot_NxmuE_E_athena_prj(athena_project, group_keys, group_names, title = "Normalised Mu vs E"):    
+def plot_NxmuE_E_athena_prj(athena_project, group_keys, group_names,
+                            title = "Normalised Mu vs E", xlimits = None,
+                            ylimits = None):    
     # plot mu vs flat normalised mu for selected groups
     for group_key in group_keys:
         gr_0 = extract_athenagroup(athena_project._athena_groups[group_key])
@@ -46,8 +48,11 @@ def plot_NxmuE_E_athena_prj(athena_project, group_keys, group_names, title = "No
     plt.xlabel("Energy")
     plt.ylabel("normalised xmuE" )
     plt.title(title)
-    plt.grid(linestyle=':', linewidth=1) #show and format grid    
-    plt.xlim(11860,12000)
+    plt.grid(linestyle=':', linewidth=1) #show and format grid
+    if xlimits != None:
+        plt.xlim(xlimits[0],xlimits[1])
+    if ylimits != None:
+        plt.xlim(ylimits[0],ylimits[1])
     plt.legend()
     return plt
 
@@ -71,21 +76,26 @@ group_names = {'ozun':"0.12",'wtnk':"2.42", 'd_4_73':"4.73",
 group_keys = list(cianobacteria_project._athena_groups.keys())[0:8]
 
 # plot mu vs flat normalised mu for selected groups
-plt = plot_NxmuE_E_athena_prj(cianobacteria_project, group_keys, group_names, title = "Cianobacteria Readings")
+plt = plot_NxmuE_E_athena_prj(cianobacteria_project, group_keys, group_names,
+                              title = "Cianobacteria Readings",
+                              xlimits = [11860,12000])
 plt.show()
 
 # https://vimeo.com/340216087 12:10 plot standards 
 # get the group keys for first last 9 groups
 group_keys = list(cianobacteria_project._athena_groups.keys())[8:17]
 
-plt = plot_NxmuE_E_athena_prj(cianobacteria_project, group_keys, group_names, title = "Cianobacteria Standards")
+plt = plot_NxmuE_E_athena_prj(cianobacteria_project, group_keys, group_names,
+                              title = "Cianobacteria Standards",
+                              xlimits = [11860,12000])
 plt.show()
 
 # https://vimeo.com/340216087 15:05 compare readings to standars 
 group_keys = ['ozun', 'lshy','hqlr','tscd']
 
 plt = plot_NxmuE_E_athena_prj(cianobacteria_project, group_keys, group_names,
-                              title = "Compare Readings to Standards")
+                              title = "Compare Readings to Standards",
+                              xlimits = [11860,12000])
 plt.show()
 
 # https://vimeo.com/340216087 15:05 compare readings to standars 
@@ -93,7 +103,8 @@ plt.show()
 group_keys = ['ozun', 'tscd']
 
 plt = plot_NxmuE_E_athena_prj(cianobacteria_project, group_keys, group_names,
-                              title = "Compare AuCl to 0.12")
+                              title = "Compare AuCl to 0.12",
+                              xlimits = [11860,12000])
 plt.show()
 
 # https://vimeo.com/340216087 15:05 compare readings to standars 
@@ -101,5 +112,7 @@ plt.show()
 group_keys = ['lshy','hqlr']
 
 plt = plot_NxmuE_E_athena_prj(cianobacteria_project, group_keys, group_names,
-                              title = "Compare Au Foil to 720")
+                              title = "Compare Au Foil to 720",
+                              xlimits = [11860,12000])
 plt.show()
+
