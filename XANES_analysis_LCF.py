@@ -91,7 +91,7 @@ plt.show()
 group_keys = list(cianobacteria_project._athena_groups.keys())[8:17]
 
 plt = plot_NxmuE_E_athena_prj(cianobacteria_project, group_keys, group_names,
-                              title = "Cianobacteria Standards",
+                              title = "Au Standards",
                               xlimits = [11860,12000])
 plt.show()
 
