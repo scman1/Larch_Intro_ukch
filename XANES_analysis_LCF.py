@@ -15,8 +15,8 @@ from numpy import log
 import matplotlib.pyplot as plt
 
  #######################################################
-# |             Athena recalculates everything        | #
-# |     so we can create a function that calculates   | #
+# |         Athena recalculates everything so we      | #
+# |      need to create a function that calculates    | #
 # V               all for each new group              V #
  #######################################################
 
@@ -33,6 +33,11 @@ def calc_with_defaults(xafs_group):
     xftf(xafs_group, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
     return xafs_group
 
+ #######################################################
+# |       The code for plotting Nmu vs E repeats      | #
+# |   so it is useful to have a plotting function     | #
+# V            to reduce duplicated code              V #
+ #######################################################
 # plot mu vs flat normalised mu for selected groups
 def plot_NxmuE_E_athena_prj(athena_project, group_keys, group_names,
                             title = "Normalised Mu vs E", xlimits = None,
@@ -134,45 +139,34 @@ for group_key in standard_keys:
     # recalculate normalisation
     calc_with_defaults(components[group_key])
     
-
+# perform linear combination fitting
 comb = lincombo_fit(mid_group,list(components.values()),[0.5,0.5])
 
 plt = plot_NxmuE_E_athena_prj(cianobacteria_project, standard_keys, group_names,
-                              title = "Compare to LCF",
+                              title = "Compare to LCF 2 standards",
                               xlimits = [11900,12000],
                               ylimits = [0.0,1.2])
 #add mid_group and LCF result to plot
 plt.plot(mid_group.energy, mid_group.flat, label="7.03",color="blue")
 plt.plot(comb.xdata, comb.ydata, label="LCF result",color="r")
-
+plt.legend() # needed for showing legends of last two lines
 plt.show()
 
-# https://vimeo.com/340216087 23:50 linear combination for inner state 
+# https://vimeo.com/340216087 23:50 add another group 
 standard_keys = ['hqlr','tscd', 'qhxp'] #Au Foil, Au3Cl, and Au sulphide
-intermidate_state_key = 'd_7_03'
-
-# get the intermediate group
-mid_group = gr_0 = extract_athenagroup(cianobacteria_project._athena_groups[intermidate_state_key])
-# recalculate normalisation
-calc_with_defaults(mid_group)
-
-# get the list of standard groups
-components = {}
-for group_key in standard_keys:
-    components[group_key] = extract_athenagroup(cianobacteria_project._athena_groups[group_key])
-    # recalculate normalisation
-    calc_with_defaults(components[group_key])
-    
-
+components['qhxp'] = extract_athenagroup(cianobacteria_project._athena_groups['qhxp'])
+calc_with_defaults(components['qhxp'])
+   
+# perform linear combination fitting
 comb = lincombo_fit(mid_group,list(components.values()),[0.333,0.333,0.333])
 
 
 plt = plot_NxmuE_E_athena_prj(cianobacteria_project, standard_keys, group_names,
-                              title = "Compare to LCF",
+                              title = "Compare to LCF 3 standards",
                               xlimits = [11900,12000],
                               ylimits = [0.0,1.2])
 #add mid_group and LCF result to plot
 plt.plot(mid_group.energy, mid_group.flat, label="7.03",color="blue")
 plt.plot(comb.xdata, comb.ydata, label="LCF result",color="r")
-
+plt.legend() # needed for showing legends of last two lines
 plt.show()
