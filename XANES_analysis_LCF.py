@@ -116,3 +116,32 @@ plt = plot_NxmuE_E_athena_prj(cianobacteria_project, group_keys, group_names,
                               xlimits = [11860,12000])
 plt.show()
 
+#Linear Combination Fitting
+
+# https://vimeo.com/340216087 19:58 linear combination for inner state 
+standard_keys = ['hqlr','tscd'] #Au Foil and Au3Cl
+intermidate_state_key = 'd_7_03'
+
+# get the intermediate group
+mid_group = gr_0 = extract_athenagroup(cianobacteria_project._athena_groups[intermidate_state_key])
+# recalculate normalisation
+calc_with_defaults(mid_group)
+
+# get the list of standard groups
+components = {}
+for group_key in standard_keys:
+    components[group_key] = extract_athenagroup(cianobacteria_project._athena_groups[group_key])
+    # recalculate normalisation
+    calc_with_defaults(components[group_key])
+    
+
+comb = lincombo_fit(mid_group,list(components.values()),[0.5,0.5])
+
+plt = plot_NxmuE_E_athena_prj(cianobacteria_project, standard_keys, group_names,
+                              title = "Compare to LCF",
+                              xlimits = [11860,12000])
+#add mid_group and LCF result to plot
+plt.plot(mid_group.energy, mid_group.flat, label="7.03",color="blue")
+plt.plot(comb.xdata, comb.ydata, label="LCF result",color="r")
+
+plt.show()
