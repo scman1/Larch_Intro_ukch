@@ -33,6 +33,23 @@ def calc_with_defaults(xafs_group):
     xftf(xafs_group, kweight=0.5, kmin=3.0, kmax=12.871, dk=1, kwindow='Hanning')
     return xafs_group
 
+# plot mu vs flat normalised mu for selected groups
+def plot_NxmuE_E_athena_prj(athena_project, group_keys, group_names):    
+    # plot mu vs flat normalised mu for selected groups
+    for group_key in group_keys:
+        gr_0 = extract_athenagroup(athena_project._athena_groups[group_key])
+        # recalculate normalisation
+        calc_with_defaults(gr_0)
+        plt.plot(gr_0.energy, gr_0.flat, label=group_names[group_key])
+
+    # set plot format
+    plt.xlabel("Energy")
+    plt.ylabel("normalised xmuE" )
+    plt.title("cyanobacteria")
+    plt.grid(linestyle=':', linewidth=1) #show and format grid    
+    plt.xlim(11860,12000)
+    plt.legend()
+    return plt
 
 
 # https://vimeo.com/340216087 08:29 open cyanobacteria project 
@@ -53,19 +70,23 @@ group_names = {'ozun':"0.12",'wtnk':"2.42", 'd_4_73':"4.73",
 group_keys = list(cianobacteria_project._athena_groups.keys())[0:8]
 
 
-# plot mu vs flat normalised mu for selected groups
-for group_key in group_keys:
-    gr_0 = extract_athenagroup(cianobacteria_project._athena_groups[group_key])
-    # recalculate normalisation
-    calc_with_defaults(gr_0)
-    plt.plot(gr_0.energy, gr_0.flat, label=group_names[group_key])
+### plot mu vs flat normalised mu for selected groups
+##for group_key in group_keys:
+##    gr_0 = extract_athenagroup(cianobacteria_project._athena_groups[group_key])
+##    # recalculate normalisation
+##    calc_with_defaults(gr_0)
+##    plt.plot(gr_0.energy, gr_0.flat, label=group_names[group_key])
+##
+### set plot format
+##plt.xlabel("Energy")
+##plt.ylabel("normalised xmuE" )
+##plt.title("cyanobacteria")
+##plt.grid(linestyle=':', linewidth=1) #show and format grid    
+##plt.xlim(11860,12000)
+##plt.legend()
 
-# set plot format
-plt.xlabel("Energy")
-plt.ylabel("normalised xmuE" )
-plt.title("cyanobacteria")
-plt.grid(linestyle=':', linewidth=1) #show and format grid    
-plt.xlim(11860,12000)
-plt.legend()
+plt = plot_NxmuE_E_athena_prj(cianobacteria_project, group_keys, group_names)
 
 plt.show()
+
+
