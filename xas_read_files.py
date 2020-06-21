@@ -81,65 +81,68 @@ my_larch = larch.Interpreter()
 # output:
 #  - an indexed list of files, which uses common patterns found as keys
 
-def get_file_groups(source_dir, filename_pattern):
+def get_file_groups(source_dir, filename_pattern, group_files):
     #i_counter = 0
     files_list = []
-    
-    
     for filepath in sorted(source_dir.glob(filename_pattern)):
         #i_counter += 1
         files_list.append(filepath)
     log_message = "Found " + str(len(files_list)) + \
         " files to process with pattern: " + \
         filename_pattern + \
-        "in dir: " + str(source_dir)
+        "in dir: " + str(source_dir) + " Group: " +str(group_files)
     logging.info(log_message)
     pattern_current = ""
     file_groups = {}
-    for index, a_file in enumerate(files_list):
-        file_name = a_file.name
-        if index < len(files_list)-1:
-            another_file = files_list[index+1].name
-            common_pattern = get_common(file_name, another_file)
-            if pattern_current == "":
-                pattern_current = common_pattern
-                if pattern_current in file_groups:
-                    file_groups[pattern_current] += [file_name, another_file]
+
+    if group_files:
+        for index, a_file in enumerate(files_list):
+            file_name = a_file.name
+            if index < len(files_list)-1:
+                another_file = files_list[index+1].name
+                common_pattern = get_common(file_name, another_file)
+                if pattern_current == "":
+                    pattern_current = common_pattern
+                    if pattern_current in file_groups:
+                        file_groups[pattern_current] += [file_name, another_file]
+                    else:
+                        file_groups[pattern_current] = [file_name, another_file]
+                elif pattern_current == common_pattern:
+                    file_groups[pattern_current].append(another_file)
                 else:
-                    file_groups[pattern_current] = [file_name, another_file]
-            elif pattern_current == common_pattern:
-                file_groups[pattern_current].append(another_file)
+                    pattern_current = ""
             else:
-                pattern_current = ""
-        else:
-            another_file = ""
+                another_file = ""
 
-    patterns_found = file_groups.keys()
-    patterns_remove = []
+        patterns_found = file_groups.keys()
+        patterns_remove = []
 
-    # mark redundant patterns to remove
-    for pattern_check in file_groups:
-        for pattern_other in patterns_found:
-            if pattern_other != pattern_check:
-                # use sets to ignore duplicates
-                set_check = set(file_groups[pattern_check])
-                set_other = set(file_groups[pattern_other])
-                if pattern_other in pattern_check:
-                    #merge check into other and remove check
-                    file_groups[pattern_other] = list(set_other.union(set_check))
-                    patterns_remove.append(pattern_check)
-                elif pattern_other in pattern_check:
-                    #merge other into check and remove other
-                    patterns_remove.append(pattern_other)
-                    file_groups[pattern_check] = list(set_other.union(set_check))
-
-    # remove redundant patterns
-    if len(patterns_remove) > 0:
-        for pattern_rem in patterns_remove:
-            file_groups.pop(pattern_rem)
+        # mark redundant patterns to remove
+        for pattern_check in file_groups:
+            for pattern_other in patterns_found:
+                if pattern_other != pattern_check:
+                    # use sets to ignore duplicates
+                    set_check = set(file_groups[pattern_check])
+                    set_other = set(file_groups[pattern_other])
+                    if pattern_other in pattern_check:
+                        #merge check into other and remove check
+                        file_groups[pattern_other] = list(set_other.union(set_check))
+                        patterns_remove.append(pattern_check)
+                    elif pattern_other in pattern_check:
+                        #merge other into check and remove other
+                        patterns_remove.append(pattern_other)
+                        file_groups[pattern_check] = list(set_other.union(set_check))
     
-    for pattern in file_groups:
+        # remove redundant patterns
+        if len(patterns_remove) > 0:
+            for pattern_rem in patterns_remove:
+                file_groups.pop(pattern_rem)
+    else:
+        file_groups['unique'] = []
+        for file in files_list:
+            file_groups['unique'].append(file.name)
         
+    for pattern in file_groups: 
         log_message = str(len(file_groups[pattern])) + " files to process with pattern " + pattern + "\nFiles: " + str(file_groups[pattern])
         logging.info(log_message)
     return file_groups
@@ -244,10 +247,17 @@ def xas_read_files(argv):
         # required
         file_path = argv[0]
         name_pattern = argv[1]
+        if len(argv) == 3:
+            if argv[2] == 'T':
+                group_files = True
+        else:
+            group_files = False
+            
     except:
         print("missing arguments"+
               "\n -string files path (eg: ../documents/ascii_path)"+
-              "\n -string file pattern (eg: *experiment_FeO2_sample*)")
+              "\n -string file pattern (eg: *experiment_FeO2_sample*)"+
+              "\n -character T or F to indicate if grouping")
         return
     
     file_dir= Path(file_path)
@@ -260,13 +270,20 @@ def xas_read_files(argv):
         xas_config = configparser.ConfigParser()
         xas_config.read(ini_file)
         # especify data columns
-        data_columns['energy'] = int(xas_config['Data_Columns']["col_energy"])
-        data_columns['time'] = int(xas_config['Data_Columns']["col_time"])
-        data_columns['i0'] = int(xas_config['Data_Columns']["col_i0"])
-        data_columns['it'] = int(xas_config['Data_Columns']["col_it"])
-        data_columns['ir'] = int(xas_config['Data_Columns']["col_ir"])
-        data_columns['mu'] = int(xas_config['Data_Columns']["col_mu"])
-        data_columns['mur'] = int(xas_config['Data_Columns']["col_mur"])
+        if 'col_energy' in xas_config['Data_Columns']:
+            data_columns['energy'] = int(xas_config['Data_Columns']["col_energy"])
+        if 'col_time' in xas_config['Data_Columns']:
+            data_columns['time'] = int(xas_config['Data_Columns']["col_time"])
+        if 'col_i0' in xas_config['Data_Columns']:
+            data_columns['i0'] = int(xas_config['Data_Columns']["col_i0"])
+        if 'col_it' in xas_config['Data_Columns']:
+            data_columns['it'] = int(xas_config['Data_Columns']["col_it"])
+        if 'col_ir' in xas_config['Data_Columns']:        
+            data_columns['ir'] = int(xas_config['Data_Columns']["col_ir"])
+        if 'col_mu' in xas_config['Data_Columns']:
+            data_columns['mu'] = int(xas_config['Data_Columns']["col_mu"])
+        if 'col_mur' in xas_config['Data_Columns']:
+            data_columns['mur'] = int(xas_config['Data_Columns']["col_mur"])
     else:
         log_message = 'missing ini file: '+ str(ini_file)
         logging.info(log_message)
@@ -284,9 +301,8 @@ def xas_read_files(argv):
                         'mur': 6}
     log_message = "data_columns:" + str(data_columns)
     logging.info(log_message)
-        
-    file_groups = get_file_groups(file_dir, name_pattern)
-    
+      
+    file_groups = get_file_groups(file_dir, name_pattern, group_files)
     
     # process file groups
     for pattern in file_groups:
@@ -296,13 +312,20 @@ def xas_read_files(argv):
             file_path = file_dir / file
             xafsdat = larch.io.read_ascii(file_path)
             # get data columns specified in ini_file
-            xafsdat.energy = xafsdat.data[data_columns['energy']]
-            xafsdat.time =   xafsdat.data[data_columns['time']]
-            xafsdat.i0 =     xafsdat.data[data_columns['i0']]
-            xafsdat.it =     xafsdat.data[data_columns['it']]
-            xafsdat.ir =     xafsdat.data[data_columns['ir']]
-            xafsdat.mu =     xafsdat.data[data_columns['mu']]
-            xafsdat.mue =    xafsdat.data[data_columns['mur']]
+            if 'energy' in data_columns:
+                xafsdat.energy = xafsdat.data[data_columns['energy']]
+            if 'time' in data_columns:
+                xafsdat.time = xafsdat.data[data_columns['time']]
+            if 'i0' in data_columns:    
+                xafsdat.i0 = xafsdat.data[data_columns['i0']]
+            if 'it' in data_columns:
+                xafsdat.it = xafsdat.data[data_columns['it']]
+            if 'ir' in data_columns:
+                xafsdat.ir = xafsdat.data[data_columns['ir']]
+            if 'mu' in data_columns:
+                xafsdat.mu = xafsdat.data[data_columns['mu']]
+            if 'mur' in data_columns:
+                xafsdat.mue = xafsdat.data[data_columns['mur']]
             # run autobk on the xafsdat Group, including a larch Interpreter....
             # note that this expects 'energy' and 'mu' to be in xafsdat, and will
             # write data for 'k', 'chi', 'kwin', 'e0', ... into xafsdat
